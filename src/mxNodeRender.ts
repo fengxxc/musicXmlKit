@@ -1,30 +1,25 @@
 import { Node } from "./node";
-import { Visitor } from "./visitor";
 
-export class MxNodeRender implements Visitor {
-    // @overwrite
-    visit(node: Node): void {
-        const name = node.getName();
+export class MxNodeRender {
+    
+    static render(root: Node) {
+        const name = root.getName();
         switch (name) {
             case 'score-partwise':
-                console.log(`score-partwise版本：${node.getAttr()['version']}`);
+                console.log(`score-partwise版本：${root.getAttr()['version']}`);
                 break;
             case 'encoding-date':
-                console.log(`编码日期：${node.getFullText()}`);
+                console.log(`编码日期：${root.getFullText()}`);
                 break;
             case 'software':
-                console.log(`软件：${node.getFullText()}`);
+                console.log(`软件：${root.getFullText()}`);
                 break;
             case 'note':
-            
+                
             default:
                 // console.log(name)
                 break;
         }
-    }
-    
-    iterNode(root: Node) {
-        root.accept(this);
-        root.forEachChildNodes((child, index, array) => this.iterNode(child));
+        root.forEachChildNodes((child, index, array) => MxNodeRender.render(child));
     }
 }

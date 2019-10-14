@@ -3,7 +3,8 @@
         "outDir": "./built",
         "allowJs": true,
         "target": "es5",
-        "module": "umd"
+        "module": "umd",
+        "sourceMap": true
     },
     "include": [
         "./src/**/*"

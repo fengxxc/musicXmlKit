@@ -1,11 +1,11 @@
 import { Node } from "./node";
 
 export class Parser {
-    static parseXml(xmlStr: string) {
+    static parseXml(xmlStr: string, decorateNodeFunc: (parent: Node, tag: string, attrs: Object) => Node) {
         const chars = xmlStr.trim().replace(/\n/g, '');
         let curTag: string = '';
         let curAttrs: Object = null;
-        let nodeStack: Node[] = [new Node(null, '_root_', {}, null, null, null)];
+        let nodeStack: Node[] = [new Node(null, '_root_', {})];
         let i = 0; // char index
         while (i < chars.length) {
             // parse tag
@@ -38,7 +38,7 @@ export class Parser {
                         console.error(`Parse xml error: 标签未正确闭合: <${node.getName()}> ... </${_curTag.trim()}>`);
                         return null;
                     }
-                    nodeStack[nodeStack.length - 1].addChileNodes(node);
+                    nodeStack[nodeStack.length - 1].addChileNode(node);
                     curTag = '', curAttrs = null;
                     i++;
                 } else {
@@ -51,14 +51,19 @@ export class Parser {
                     // parse attrbute
                     curAttrs = parseAttrbutes(); // result json or null
 
+                    let node: Node;
+                    if (decorateNodeFunc) 
+                        node = decorateNodeFunc(nodeStack[nodeStack.length - 1], curTag, curAttrs);
+                    else 
+                        node = new Node(nodeStack[nodeStack.length - 1], curTag, curAttrs);
                     if (chars.charAt(i) + chars.charAt(i + 1) == '/>') {
                         // parse 单标签
                         i++;
-                        const node = new Node(nodeStack[nodeStack.length - 1], curTag, curAttrs, false, null, null);
-                        nodeStack[nodeStack.length - 1].addChileNodes(node);
+                        node.setIsDoubleTag(false);
+                        nodeStack[nodeStack.length - 1].addChileNode(node);
                     } else {
                         // parse 双标签之 开始标签 (chars.charAt(i) == '>')
-                        const node = new Node(nodeStack[nodeStack.length - 1], curTag, curAttrs, true, null, null);
+                        node.setIsDoubleTag(true);
                         nodeStack.push(node);
                     }
                     i++;
@@ -70,13 +75,13 @@ export class Parser {
             }
 
             // parse text
-            let text = '';
+            let text: string = '';
             for (; i < chars.length && chars.charAt(i) != '<'; i++) text += chars.charAt(i);
-            const node = new Node(nodeStack[nodeStack.length - 1], '_text_', null, false, null, text.trim());
-            nodeStack[nodeStack.length - 1].addChileNodes(node);
+            const node = new Node(nodeStack[nodeStack.length - 1], '_text_', null).setText(text.trim()).setIsDoubleTag(false);
+            nodeStack[nodeStack.length - 1].addChileNode(node);
         }
 
-        function parseAttrbutes() {
+        function parseAttrbutes(): Object {
             const start = i;
             for (; i < chars.length && chars.charAt(i) != '/' && chars.charAt(i) != '>'; i++) {}
             return start == i ?

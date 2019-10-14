@@ -13,11 +13,11 @@
     var Parser = /** @class */ (function () {
         function Parser() {
         }
-        Parser.parseXml = function (xmlStr) {
+        Parser.parseXml = function (xmlStr, decorateNodeFunc) {
             var chars = xmlStr.trim().replace(/\n/g, '');
             var curTag = '';
             var curAttrs = null;
-            var nodeStack = [new node_1.Node(null, '_root_', {}, null, null, null)];
+            var nodeStack = [new node_1.Node(null, '_root_', {})];
             var i = 0; // char index
             while (i < chars.length) {
                 // parse tag
@@ -55,7 +55,7 @@
                             console.error("Parse xml error: \u6807\u7B7E\u672A\u6B63\u786E\u95ED\u5408: <" + node_2.getName() + "> ... </" + _curTag.trim() + ">");
                             return null;
                         }
-                        nodeStack[nodeStack.length - 1].addChileNodes(node_2);
+                        nodeStack[nodeStack.length - 1].addChileNode(node_2);
                         curTag = '', curAttrs = null;
                         i++;
                     }
@@ -66,16 +66,21 @@
                         for (; i < chars.length && chars.charAt(i) == ' '; i++) { }
                         // parse attrbute
                         curAttrs = parseAttrbutes(); // result json or null
+                        var node_3 = void 0;
+                        if (decorateNodeFunc)
+                            node_3 = decorateNodeFunc(nodeStack[nodeStack.length - 1], curTag, curAttrs);
+                        else
+                            node_3 = new node_1.Node(nodeStack[nodeStack.length - 1], curTag, curAttrs);
                         if (chars.charAt(i) + chars.charAt(i + 1) == '/>') {
                             // parse 单标签
                             i++;
-                            var node_3 = new node_1.Node(nodeStack[nodeStack.length - 1], curTag, curAttrs, false, null, null);
-                            nodeStack[nodeStack.length - 1].addChileNodes(node_3);
+                            node_3.setIsDoubleTag(false);
+                            nodeStack[nodeStack.length - 1].addChileNode(node_3);
                         }
                         else {
                             // parse 双标签之 开始标签 (chars.charAt(i) == '>')
-                            var node_4 = new node_1.Node(nodeStack[nodeStack.length - 1], curTag, curAttrs, true, null, null);
-                            nodeStack.push(node_4);
+                            node_3.setIsDoubleTag(true);
+                            nodeStack.push(node_3);
                         }
                         i++;
                         curTag = '', curAttrs = null;
@@ -88,8 +93,8 @@
                 var text = '';
                 for (; i < chars.length && chars.charAt(i) != '<'; i++)
                     text += chars.charAt(i);
-                var node = new node_1.Node(nodeStack[nodeStack.length - 1], '_text_', null, false, null, text.trim());
-                nodeStack[nodeStack.length - 1].addChileNodes(node);
+                var node = new node_1.Node(nodeStack[nodeStack.length - 1], '_text_', null).setText(text.trim()).setIsDoubleTag(false);
+                nodeStack[nodeStack.length - 1].addChileNode(node);
             }
             function parseAttrbutes() {
                 var start = i;
@@ -103,3 +108,4 @@
     }());
     exports.Parser = Parser;
 });
+//# sourceMappingURL=parse.js.map

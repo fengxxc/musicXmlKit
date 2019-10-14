@@ -1,2 +1,3 @@
 .vscode/*
 *.xmind
+node_modules/**
