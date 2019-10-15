@@ -1,7 +1,8 @@
 import { Node } from "../node";
 
 export interface SorePartWise {
-    getIdentification(): Object;
-    getDefaults(): Object;
+    getIdentification(): Node;
+    getDefaults(): Node;
     getPartList(): Node[];
+    getPart(): Node[];
 }

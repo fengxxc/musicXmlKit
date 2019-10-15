@@ -17,4 +17,8 @@ export class SorePartWiseNode extends Node implements SorePartWise {
     getPartList(): Node[] {
         return super.getChildNodesByName('part-list');
     }
+    // @overwrite
+    getPart(): Node[] {
+        return super.getChildNodesByName('part');
+    }
 }

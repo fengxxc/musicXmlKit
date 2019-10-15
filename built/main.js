@@ -36,7 +36,8 @@
     });
     console.dir(root);
     var spn = root.getChildNodesByName('score-partwise')[0];
-    console.log(spn.getDefaults());
+    console.log(spn);
+    console.log(root.getNodesById('P1'));
     mxNodeRender_1.MxNodeRender.render(root);
     console.log(root.getFullText());
 });

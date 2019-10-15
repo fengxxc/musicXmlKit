@@ -1,21 +1,28 @@
+import { RootNode } from "./rootNode";
 
 export class Node {
     private parentNode: Node;
+    private rootNode: RootNode;
     private name: string;
     private attr: Object; // json
     private isDoubleTag: boolean;
-    private childNodes: Array<Node>;
+    private childNodes: Node[]; // 这货存在的意义就是，ts里尚无有序集合，摔
     private text: string;
+
     // json as: Map<string, number[]> {name: [index], name2: [index2, index3]} 待优化...
-    private _childNameIndex: Record<string, number[]>; 
+    private _childNameIndex: Record<string, Node[]>;
+    private _childAttrIndex: Record<string, Record<string, Node[]>>;
+
     constructor(parentNode: Node, name: string, attr: Object) {
         this.parentNode = parentNode;
+        this.rootNode = <RootNode>(parentNode ? parentNode.getRootNode() : this);
         this.name = name;
         this.attr = attr;
         this.isDoubleTag = true;
         this.childNodes = [];
         this.text = '';
         this._childNameIndex = {};
+        this._childAttrIndex = {};
     }
 
     getParentNode() {
@@ -23,6 +30,14 @@ export class Node {
     }
     setParentNode(parentNode: Node) {
         this.parentNode = parentNode;
+        return this;
+    }
+
+    getRootNode() {
+        return this.rootNode;
+    }
+    setRootNode(rootNode: RootNode) {
+        this.rootNode = rootNode;
         return this;
     }
 
@@ -57,39 +72,53 @@ export class Node {
     getChildNodes() {
         return this.childNodes;
     }
-    setChildNodes(childNodes: Node[]) {
+    setChildNodes(nodes: Node[]) {
         this.childNodes = [];
-        this.addChileNodes(childNodes);
+        this.addChileNodes(nodes);
         return this;
     }
-    addChileNodes(childNodes: Node[]) {
-        childNodes.forEach(node => this.addChileNode(node));
+    addChileNodes(nodes: Node[]) {
+        nodes.forEach(node => this.addChileNode(node));
         return this;
     }
-    addChileNode(childNode: Node) {
-        this.childNodes.push(childNode);
-        this.appendChildIndex(childNode);
+    addChileNode(node: Node) {
+        this.childNodes.push(node);
+        this.appendChildIndex(node);
         return this;
     }
-    appendChildIndex(childNode: Node) {
-        const name: string = childNode.getName();
-        const index: number = this.childNodes.length-1;
-        /* if (name in this._childNameIndex) {
-            if (typeof(this._childNameIndex[name]) == 'number') 
-                this._childNameIndex[name] = [this._childNameIndex[name]];
-            this._childNameIndex[name].push(index);
-        } else {
-            this._childNameIndex[name] = index;
-        } */
+
+    appendChildIndex(node: Node) {
+        // name index
+        const name: string = node.getName();
         if (name in this._childNameIndex) {
-            this._childNameIndex[name].push(index);
+            this._childNameIndex[name].push(node);
         } else {
-            this._childNameIndex[name] = [index];
+            this._childNameIndex[name] = [node];
+        }
+
+        // attr index
+        const attrs: Object = node.getAttr();
+        for (const attrK in attrs) {
+            if (!attrs.hasOwnProperty(attrK)) continue;
+            const attrV = attrs[attrK];
+            // id 特殊处理，索引加到全局上
+            if (attrK === 'id') {
+                const root: RootNode = this.getRootNode();
+                root.appendIdIndex(attrV, node);
+                continue;
+            }
+            if (attrK in this._childAttrIndex) 
+                if (attrV in this._childAttrIndex[attrK]) 
+                    this._childAttrIndex[attrK][attrV].push(node);
+                else 
+                    this._childAttrIndex[attrK][attrV] = [node];
+            else 
+                this._childAttrIndex[attrK] = {[attrV] : [node]};
+            
         }
     }
     getChildNodesByName(name: string): Node[] {
-        const indexs: number[] = this._childNameIndex[name];
-        return indexs.map(i => this.childNodes[i]);
+        return this._childNameIndex[name];
     }
 
     forEachChildNodes(fn: (child: Node, index: number, array: Node[]) => void) {

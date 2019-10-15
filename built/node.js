@@ -12,18 +12,27 @@
     var Node = /** @class */ (function () {
         function Node(parentNode, name, attr) {
             this.parentNode = parentNode;
+            this.rootNode = (parentNode ? parentNode.getRootNode() : this);
             this.name = name;
             this.attr = attr;
             this.isDoubleTag = true;
             this.childNodes = [];
             this.text = '';
             this._childNameIndex = {};
+            this._childAttrIndex = {};
         }
         Node.prototype.getParentNode = function () {
             return this.parentNode;
         };
         Node.prototype.setParentNode = function (parentNode) {
             this.parentNode = parentNode;
+            return this;
+        };
+        Node.prototype.getRootNode = function () {
+            return this.rootNode;
+        };
+        Node.prototype.setRootNode = function (rootNode) {
+            this.rootNode = rootNode;
             return this;
         };
         Node.prototype.getName = function () {
@@ -54,42 +63,54 @@
         Node.prototype.getChildNodes = function () {
             return this.childNodes;
         };
-        Node.prototype.setChildNodes = function (childNodes) {
+        Node.prototype.setChildNodes = function (nodes) {
             this.childNodes = [];
-            this.addChileNodes(childNodes);
+            this.addChileNodes(nodes);
             return this;
         };
-        Node.prototype.addChileNodes = function (childNodes) {
+        Node.prototype.addChileNodes = function (nodes) {
             var _this = this;
-            childNodes.forEach(function (node) { return _this.addChileNode(node); });
+            nodes.forEach(function (node) { return _this.addChileNode(node); });
             return this;
         };
-        Node.prototype.addChileNode = function (childNode) {
-            this.childNodes.push(childNode);
-            this.appendChildIndex(childNode);
+        Node.prototype.addChileNode = function (node) {
+            this.childNodes.push(node);
+            this.appendChildIndex(node);
             return this;
         };
-        Node.prototype.appendChildIndex = function (childNode) {
-            var name = childNode.getName();
-            var index = this.childNodes.length - 1;
-            /* if (name in this._childNameIndex) {
-                if (typeof(this._childNameIndex[name]) == 'number')
-                    this._childNameIndex[name] = [this._childNameIndex[name]];
-                this._childNameIndex[name].push(index);
-            } else {
-                this._childNameIndex[name] = index;
-            } */
+        Node.prototype.appendChildIndex = function (node) {
+            var _a;
+            // name index
+            var name = node.getName();
             if (name in this._childNameIndex) {
-                this._childNameIndex[name].push(index);
+                this._childNameIndex[name].push(node);
             }
             else {
-                this._childNameIndex[name] = [index];
+                this._childNameIndex[name] = [node];
+            }
+            // attr index
+            var attrs = node.getAttr();
+            for (var attrK in attrs) {
+                if (!attrs.hasOwnProperty(attrK))
+                    continue;
+                var attrV = attrs[attrK];
+                // id 特殊处理，索引加到全局上
+                if (attrK === 'id') {
+                    var root = this.getRootNode();
+                    root.appendIdIndex(attrV, node);
+                    continue;
+                }
+                if (attrK in this._childAttrIndex)
+                    if (attrV in this._childAttrIndex[attrK])
+                        this._childAttrIndex[attrK][attrV].push(node);
+                    else
+                        this._childAttrIndex[attrK][attrV] = [node];
+                else
+                    this._childAttrIndex[attrK] = (_a = {}, _a[attrV] = [node], _a);
             }
         };
         Node.prototype.getChildNodesByName = function (name) {
-            var _this = this;
-            var indexs = this._childNameIndex[name];
-            return indexs.map(function (i) { return _this.childNodes[i]; });
+            return this._childNameIndex[name];
         };
         Node.prototype.forEachChildNodes = function (fn) {
             this.getChildNodes().forEach(function (child, index, array) { return fn(child, index, array); });

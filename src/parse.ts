@@ -1,17 +1,18 @@
 import { Node } from "./node";
+import { RootNode } from "./rootNode";
 
 export class Parser {
-    static parseXml(xmlStr: string, decorateNodeFunc: (parent: Node, tag: string, attrs: Object) => Node) {
+    static parseXml(xmlStr: string, decorateNodeFunc: (parent: Node, tag: string, attrs: Object) => Node): RootNode {
         const chars = xmlStr.trim().replace(/\n/g, '');
         let curTag: string = '';
         let curAttrs: Object = null;
-        let nodeStack: Node[] = [new Node(null, '_root_', {})];
+        let nodeStack: Node[] = [new RootNode(null, '_root_', {})];
         let i = 0; // char index
         while (i < chars.length) {
             // parse tag
             if (chars.charAt(i) == '<') {
                 i++;
-                if (chars.charAt(i) == '?') {
+                if (chars.charAt(i) == '?') { // '<?'
                     // parse xml 头部声明
                     i++;
                     let declare = '';
@@ -22,13 +23,13 @@ export class Parser {
                     }
                     nodeStack[nodeStack.length - 1].putAttr('declare', declare.trim());
                     i += 2;
-                } else if (chars.charAt(i) == '!') {
+                } else if (chars.charAt(i) == '!') { // '<!'
                     i++;
                     let doctype = '';
                     for (; i < chars.length && chars.charAt(i) != '>'; i++) doctype += chars.charAt(i);
                     nodeStack[nodeStack.length - 1].putAttr('doctype', doctype.trim());
                     i++;
-                } else if (chars.charAt(i) == '/') {
+                } else if (chars.charAt(i) == '/') { // '</'
                     // parse 双标签之 闭合标签
                     i++;
                     let _curTag = '';
@@ -88,6 +89,6 @@ export class Parser {
                 null : JSON.parse('{"' + chars.slice(start, i).trim().replace(/"\s+/g, '","').replace(/\s*=\s*"/g, '":"') + '}');
         }
 
-        return nodeStack[0];
+        return <RootNode>nodeStack[0];
     }
 } 

@@ -23,29 +23,28 @@ var __extends = (this && this.__extends) || (function () {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var node_1 = require("./node");
-    var SorePartWiseNode = /** @class */ (function (_super) {
-        __extends(SorePartWiseNode, _super);
-        function SorePartWiseNode(parentNode, name, attr) {
-            return _super.call(this, parentNode, name, attr) || this;
+    var RootNode = /** @class */ (function (_super) {
+        __extends(RootNode, _super);
+        function RootNode(parentNode, name, attr) {
+            var _this = _super.call(this, parentNode, name, attr) || this;
+            _this.idIndex = {};
+            return _this;
         }
-        // @overwrite
-        SorePartWiseNode.prototype.getIdentification = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'identification')[0];
+        // overwrite
+        RootNode.prototype.appendIdIndex = function (id, node) {
+            if (id in this.idIndex) {
+                // throw new Error(`id:"${id}"已存在`);
+                this.idIndex[id].push(node);
+                return;
+            }
+            this.idIndex[id] = [node];
         };
-        // @overwrite
-        SorePartWiseNode.prototype.getDefaults = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'defaults')[0];
+        // overwrite
+        RootNode.prototype.getNodesById = function (id) {
+            return this.idIndex[id];
         };
-        // @overwrite
-        SorePartWiseNode.prototype.getPartList = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'part-list');
-        };
-        // @overwrite
-        SorePartWiseNode.prototype.getPart = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'part');
-        };
-        return SorePartWiseNode;
+        return RootNode;
     }(node_1.Node));
-    exports.SorePartWiseNode = SorePartWiseNode;
+    exports.RootNode = RootNode;
 });
-//# sourceMappingURL=sorePartWiseNode.js.map
+//# sourceMappingURL=rootNode.js.map

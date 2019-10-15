@@ -188,7 +188,10 @@ const root = Parser.parseXml(xml, (parent: Node, tag: string, attrs: Object) => 
 console.dir(root);
 
 const spn = <SorePartWiseNode>root.getChildNodesByName('score-partwise')[0];
-console.log(spn.getDefaults());
+console.log(spn);
+
+console.log(root.getNodesById('P1'));
+
 
 MxNodeRender.render(root);
 

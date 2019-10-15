@@ -4,12 +4,13 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./node"], factory);
+        define(["require", "exports", "./node", "./rootNode"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var node_1 = require("./node");
+    var rootNode_1 = require("./rootNode");
     var Parser = /** @class */ (function () {
         function Parser() {
         }
@@ -17,13 +18,13 @@
             var chars = xmlStr.trim().replace(/\n/g, '');
             var curTag = '';
             var curAttrs = null;
-            var nodeStack = [new node_1.Node(null, '_root_', {})];
+            var nodeStack = [new rootNode_1.RootNode(null, '_root_', {})];
             var i = 0; // char index
             while (i < chars.length) {
                 // parse tag
                 if (chars.charAt(i) == '<') {
                     i++;
-                    if (chars.charAt(i) == '?') {
+                    if (chars.charAt(i) == '?') { // '<?'
                         // parse xml 头部声明
                         i++;
                         var declare = '';
@@ -36,7 +37,7 @@
                         nodeStack[nodeStack.length - 1].putAttr('declare', declare.trim());
                         i += 2;
                     }
-                    else if (chars.charAt(i) == '!') {
+                    else if (chars.charAt(i) == '!') { // '<!'
                         i++;
                         var doctype = '';
                         for (; i < chars.length && chars.charAt(i) != '>'; i++)
@@ -44,7 +45,7 @@
                         nodeStack[nodeStack.length - 1].putAttr('doctype', doctype.trim());
                         i++;
                     }
-                    else if (chars.charAt(i) == '/') {
+                    else if (chars.charAt(i) == '/') { // '</'
                         // parse 双标签之 闭合标签
                         i++;
                         var _curTag = '';
