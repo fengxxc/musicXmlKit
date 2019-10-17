@@ -118,7 +118,10 @@ export class Node {
         }
     }
     getChildNodesByName(name: string): Node[] {
-        return this._childNameIndex[name];
+        if (name in this._childNameIndex) {
+            return this._childNameIndex[name];
+        }
+        return [];
     }
 
     forEachChildNodes(fn: (child: Node, index: number, array: Node[]) => void) {

@@ -6,19 +6,19 @@ export class SorePartWiseNode extends Node implements SorePartWise {
         super(parentNode, name, attr);
     }
     // @overwrite
-    getIdentification(): Node {
+    Identification(): Node {
         return super.getChildNodesByName('identification')[0];
     }
     // @overwrite
-    getDefaults(): Node {
+    Defaults(): Node {
         return super.getChildNodesByName('defaults')[0];
     }
     // @overwrite
-    getPartList(): Node[] {
+    PartList(): Node[] {
         return super.getChildNodesByName('part-list');
     }
     // @overwrite
-    getPart(): Node[] {
+    Part(): Node[] {
         return super.getChildNodesByName('part');
     }
 }

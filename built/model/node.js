@@ -110,7 +110,10 @@
             }
         };
         Node.prototype.getChildNodesByName = function (name) {
-            return this._childNameIndex[name];
+            if (name in this._childNameIndex) {
+                return this._childNameIndex[name];
+            }
+            return [];
         };
         Node.prototype.forEachChildNodes = function (fn) {
             this.getChildNodes().forEach(function (child, index, array) { return fn(child, index, array); });

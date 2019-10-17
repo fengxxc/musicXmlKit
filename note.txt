@@ -1,0 +1,14 @@
+musicXml中fifths值说明：
+值       大调    小调
+0        C       A
+1        G       E
+2        D       B
+3        A       #F
+4        E       #C
+5        B/bC    #G/bA
+6        #F/bG   #D/bE
+7        #C/bD   #A/bB
+-4       bA/F    F
+-3       bE      C
+-2       bB      G
+-1       F       D

@@ -29,19 +29,19 @@ var __extends = (this && this.__extends) || (function () {
             return _super.call(this, parentNode, name, attr) || this;
         }
         // @overwrite
-        SorePartWiseNode.prototype.getIdentification = function () {
+        SorePartWiseNode.prototype.Identification = function () {
             return _super.prototype.getChildNodesByName.call(this, 'identification')[0];
         };
         // @overwrite
-        SorePartWiseNode.prototype.getDefaults = function () {
+        SorePartWiseNode.prototype.Defaults = function () {
             return _super.prototype.getChildNodesByName.call(this, 'defaults')[0];
         };
         // @overwrite
-        SorePartWiseNode.prototype.getPartList = function () {
+        SorePartWiseNode.prototype.PartList = function () {
             return _super.prototype.getChildNodesByName.call(this, 'part-list');
         };
         // @overwrite
-        SorePartWiseNode.prototype.getPart = function () {
+        SorePartWiseNode.prototype.Part = function () {
             return _super.prototype.getChildNodesByName.call(this, 'part');
         };
         return SorePartWiseNode;

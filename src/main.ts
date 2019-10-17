@@ -1,7 +1,8 @@
 import { Parser } from "./parse";
-import { Node } from "./node";
+import { Node } from "./model/node";
 import { MxNodeRender } from "./mxNodeRender";
-import { SorePartWiseNode } from "./sorePartWiseNode";
+import { SorePartWiseNode } from "./model/sorePartWiseNode";
+import { NoteNode } from "./model/noteNode";
 
 let xml = `
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -178,19 +179,30 @@ const root = Parser.parseXml(xml, (parent: Node, tag: string, attrs: Object) => 
         case 'score-partwise':
             res = new SorePartWiseNode(parent, tag, attrs);
             break;
-    
+        case 'note':
+            res = new NoteNode(parent, tag, attrs);
+            break;
         default:
             res = new Node(parent, tag, attrs);
             break;
     }
     return res;
 });
+
+// 
 console.dir(root);
 
 const spn = <SorePartWiseNode>root.getChildNodesByName('score-partwise')[0];
 console.log(spn);
 
-console.log(root.getNodesById('P1'));
+const n1 = <NoteNode>spn.getChildNodesByName('part')[0].getChildNodesByName('measure')[0].getChildNodesByName('note')[0];
+console.log(n1.Duration());
+console.log(n1.PitchStep());
+console.log(n1.PitchOctave());
+console.log(n1.PitchAlter());
+console.log(n1.NotationsDynamics());
+console.log(n1.NotationsTechFret());
+console.log(n1.NotationsTechString());
 
 
 MxNodeRender.render(root);
