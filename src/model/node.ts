@@ -10,8 +10,8 @@ export class Node {
     private text: string;
 
     // json as: Map<string, number[]> {name: [index], name2: [index2, index3]} 待优化...
-    private _childNameIndex: Record<string, Node[]>;
-    private _childAttrIndex: Record<string, Record<string, Node[]>>;
+    private _childNameIndex: Record<string, number[]>;
+    private _childAttrIndex: Record<string, Record<string, number[]>>;
 
     constructor(parentNode: Node, name: string, attr: Object) {
         this.parentNode = parentNode;
@@ -83,17 +83,18 @@ export class Node {
     }
     addChileNode(node: Node) {
         this.childNodes.push(node);
-        this.appendChildIndex(node);
+        const index = this.childNodes.length - 1;
+        this.appendChildIndex(node, index);
         return this;
     }
 
-    appendChildIndex(node: Node) {
+    appendChildIndex(node: Node, index: number) {
         // name index
         const name: string = node.getName();
         if (name in this._childNameIndex) {
-            this._childNameIndex[name].push(node);
+            this._childNameIndex[name].push(index);
         } else {
-            this._childNameIndex[name] = [node];
+            this._childNameIndex[name] = [index];
         }
 
         // attr index
@@ -109,19 +110,21 @@ export class Node {
             }
             if (attrK in this._childAttrIndex) 
                 if (attrV in this._childAttrIndex[attrK]) 
-                    this._childAttrIndex[attrK][attrV].push(node);
+                    this._childAttrIndex[attrK][attrV].push(index);
                 else 
-                    this._childAttrIndex[attrK][attrV] = [node];
+                    this._childAttrIndex[attrK][attrV] = [index];
             else 
-                this._childAttrIndex[attrK] = {[attrV] : [node]};
+                this._childAttrIndex[attrK] = { [attrV]: [index]};
             
         }
     }
-    getChildNodesByName(name: string): Node[] {
-        if (name in this._childNameIndex) {
+    protected getChildNodesIndexByName(name: string): number[] {
+        if (name in this._childNameIndex) 
             return this._childNameIndex[name];
-        }
         return [];
+    }
+    getChildNodesByName(name: string): Node[] {
+        return this.getChildNodesIndexByName(name).map((index) => this.childNodes[index]);
     }
 
     forEachChildNodes(fn: (child: Node, index: number, array: Node[]) => void) {

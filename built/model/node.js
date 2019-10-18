@@ -75,18 +75,19 @@
         };
         Node.prototype.addChileNode = function (node) {
             this.childNodes.push(node);
-            this.appendChildIndex(node);
+            var index = this.childNodes.length - 1;
+            this.appendChildIndex(node, index);
             return this;
         };
-        Node.prototype.appendChildIndex = function (node) {
+        Node.prototype.appendChildIndex = function (node, index) {
             var _a;
             // name index
             var name = node.getName();
             if (name in this._childNameIndex) {
-                this._childNameIndex[name].push(node);
+                this._childNameIndex[name].push(index);
             }
             else {
-                this._childNameIndex[name] = [node];
+                this._childNameIndex[name] = [index];
             }
             // attr index
             var attrs = node.getAttr();
@@ -102,18 +103,21 @@
                 }
                 if (attrK in this._childAttrIndex)
                     if (attrV in this._childAttrIndex[attrK])
-                        this._childAttrIndex[attrK][attrV].push(node);
+                        this._childAttrIndex[attrK][attrV].push(index);
                     else
-                        this._childAttrIndex[attrK][attrV] = [node];
+                        this._childAttrIndex[attrK][attrV] = [index];
                 else
-                    this._childAttrIndex[attrK] = (_a = {}, _a[attrV] = [node], _a);
+                    this._childAttrIndex[attrK] = (_a = {}, _a[attrV] = [index], _a);
             }
         };
-        Node.prototype.getChildNodesByName = function (name) {
-            if (name in this._childNameIndex) {
+        Node.prototype.getChildNodesIndexByName = function (name) {
+            if (name in this._childNameIndex)
                 return this._childNameIndex[name];
-            }
             return [];
+        };
+        Node.prototype.getChildNodesByName = function (name) {
+            var _this = this;
+            return this.getChildNodesIndexByName(name).map(function (index) { return _this.childNodes[index]; });
         };
         Node.prototype.forEachChildNodes = function (fn) {
             this.getChildNodes().forEach(function (child, index, array) { return fn(child, index, array); });

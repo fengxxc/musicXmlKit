@@ -4,13 +4,13 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./model/node", "./model/rootNode"], factory);
+        define(["require", "exports", "./node", "./rootNode"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var node_1 = require("./model/node");
-    var rootNode_1 = require("./model/rootNode");
+    var node_1 = require("./node");
+    var rootNode_1 = require("./rootNode");
     var Parser = /** @class */ (function () {
         function Parser() {
         }

@@ -1,8 +1,9 @@
-import { Parser } from "./parse";
+import { Parser } from "./model/parse";
 import { Node } from "./model/node";
 import { MxNodeRender } from "./mxNodeRender";
 import { SorePartWiseNode } from "./model/sorePartWiseNode";
 import { NoteNode } from "./model/noteNode";
+import { MeasureNode } from "./model/measureNode";
 
 let xml = `
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -179,6 +180,9 @@ const root = Parser.parseXml(xml, (parent: Node, tag: string, attrs: Object) => 
         case 'score-partwise':
             res = new SorePartWiseNode(parent, tag, attrs);
             break;
+        case 'measure':
+            res = new MeasureNode(parent, tag, attrs);
+            break;
         case 'note':
             res = new NoteNode(parent, tag, attrs);
             break;
@@ -189,13 +193,23 @@ const root = Parser.parseXml(xml, (parent: Node, tag: string, attrs: Object) => 
     return res;
 });
 
-// 
-console.dir(root);
+// start
+console.time('-------------执行时间------------');
 
+console.dir(root);
 const spn = <SorePartWiseNode>root.getChildNodesByName('score-partwise')[0];
 console.log(spn);
 
-const n1 = <NoteNode>spn.getChildNodesByName('part')[0].getChildNodesByName('measure')[0].getChildNodesByName('note')[0];
+console.log('~~~ test MeasureNode ~~~');
+const m: MeasureNode[] = <MeasureNode[]>spn.getChildNodesByName('part')[0].getChildNodesByName('measure');
+console.log(m);
+console.log(m[0].Number());
+console.log(m[0].Attributes());
+console.log(m[0].displayEntities());
+
+
+console.log('~~~ test NoteNode ~~~');
+const n1 = <NoteNode>m[0].getChildNodesByName('note')[0];
 console.log(n1.Duration());
 console.log(n1.PitchStep());
 console.log(n1.PitchOctave());
@@ -208,3 +222,6 @@ console.log(n1.NotationsTechString());
 MxNodeRender.render(root);
 
 console.log(root.getFullText());
+
+console.timeEnd('-------------执行时间------------');
+// end

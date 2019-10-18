@@ -1,5 +1,5 @@
-import { Node } from "./model/node";
-import { RootNode } from "./model/rootNode";
+import { Node } from "./node";
+import { RootNode } from "./rootNode";
 
 export class Parser {
     static parseXml(xmlStr: string, decorateNodeFunc: (parent: Node, tag: string, attrs: Object) => Node): RootNode {
