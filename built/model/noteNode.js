@@ -25,8 +25,8 @@ var __extends = (this && this.__extends) || (function () {
     var node_1 = require("./node");
     var NoteNode = /** @class */ (function (_super) {
         __extends(NoteNode, _super);
-        function NoteNode(parentNode, name, attr) {
-            var _this = _super.call(this, parentNode, name, attr) || this;
+        function NoteNode(index, parentNode, name, attr) {
+            var _this = _super.call(this, index, parentNode, name, attr) || this;
             _this.tempRest = null;
             _this.tempPitch = null;
             _this.tempNotations = null;
@@ -77,6 +77,11 @@ var __extends = (this && this.__extends) || (function () {
         NoteNode.prototype.Duration = function () {
             var d = _super.prototype.getChildNodesByName.call(this, 'duration');
             return d.length == 0 ? null : parseInt(d[0].getFullText());
+        };
+        // @overwrite
+        NoteNode.prototype.TieType = function () {
+            var t = _super.prototype.getChildNodesByName.call(this, 'tie');
+            return t.length == 0 ? '' : t[0].getAttr()['type'];
         };
         // @overwrite
         NoteNode.prototype.Voice = function () {

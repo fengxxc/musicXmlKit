@@ -2,8 +2,8 @@ import { Node } from "./node";
 import { SorePartWise } from "./interface/sorePartWise";
 
 export class SorePartWiseNode extends Node implements SorePartWise {
-    constructor(parentNode: Node, name: string, attr: Object) {
-        super(parentNode, name, attr);
+    constructor(_index: number, parentNode: Node, name: string, attr: Object) {
+        super(_index, parentNode, name, attr);
     }
     // @overwrite
     Identification(): Node {

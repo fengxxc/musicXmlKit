@@ -4,6 +4,7 @@ import { MxNodeRender } from "./mxNodeRender";
 import { SorePartWiseNode } from "./model/sorePartWiseNode";
 import { NoteNode } from "./model/noteNode";
 import { MeasureNode } from "./model/measureNode";
+import { DireMetronomeNode } from "./model/direMetronomeNode";
 
 let xml = `
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -174,23 +175,42 @@ let xml = `
     <zz></zz>
 </qwe>`; */
 
-const root = Parser.parseXml(xml, (parent: Node, tag: string, attrs: Object) => {
+const root = Parser.parseXml(xml, (index: number, parent: Node, tag: string, attrs: Object) => {
     let res: Node;
     switch (tag) {
         case 'score-partwise':
-            res = new SorePartWiseNode(parent, tag, attrs);
+            res = new SorePartWiseNode(index, parent, tag, attrs);
             break;
         case 'measure':
-            res = new MeasureNode(parent, tag, attrs);
+            res = new MeasureNode(index, parent, tag, attrs);
             break;
         case 'note':
-            res = new NoteNode(parent, tag, attrs);
+            res = new NoteNode(index, parent, tag, attrs);
+            break;
+        case 'metronome':
+            /* let direNode: Node = parent.getParentNode();
+            const newDireNode = new DireMetronomeNode(direNode.getIndex(), direNode.getParentNode(), direNode.getName(), direNode.getAttr());
+            Node.replace(parent.getParentNode(), newDireNode); */
+            const direNode: Node = parent.getParentNode();
+            Node.replace(direNode, new DireMetronomeNode());
+            res = new Node(index, parent, tag, attrs);
             break;
         default:
-            res = new Node(parent, tag, attrs);
+            res = new Node(index, parent, tag, attrs);
             break;
     }
     return res;
+}, node => {
+    // let res: Node = node;
+    switch (node.getName()) {
+        case 'metronome':
+            // const direNode: Node = node.getParentNode().getParentNode();
+            // Node.replace(direNode, new DireMetronomeNode());
+            break;
+        default:
+            break;
+    }
+    // return res;
 });
 
 // start

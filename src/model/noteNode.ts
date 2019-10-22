@@ -5,8 +5,8 @@ export class NoteNode extends Node implements Note {
     private tempRest: boolean = null;
     private tempPitch: Node[] = null;
     private tempNotations: Node[] = null;
-    constructor(parentNode: Node, name: string, attr: Object) {
-        super(parentNode, name, attr);
+    constructor(index: number, parentNode: Node, name: string, attr: Object) {
+        super(index, parentNode, name, attr);
     }
     // @overwrite
     chord(): boolean {
@@ -44,6 +44,11 @@ export class NoteNode extends Node implements Note {
     Duration(): number {
         const d = super.getChildNodesByName('duration');
         return d.length == 0 ? null : parseInt(d[0].getFullText());
+    }
+    // @overwrite
+    TieType(): string {
+        const t = super.getChildNodesByName('tie');
+        return t.length == 0 ? '' : t[0].getAttr()['type'];
     }
     // @overwrite
     Voice(): number {

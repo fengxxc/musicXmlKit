@@ -23,28 +23,12 @@ var __extends = (this && this.__extends) || (function () {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var node_1 = require("./node");
-    var RootNode = /** @class */ (function (_super) {
-        __extends(RootNode, _super);
-        function RootNode(index, parentNode, name, attr) {
-            var _this = _super.call(this, index, parentNode, name, attr) || this;
-            _this.idIndex = {};
-            return _this;
+    var DireMetronomeNode = /** @class */ (function (_super) {
+        __extends(DireMetronomeNode, _super);
+        function DireMetronomeNode() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        // overwrite
-        RootNode.prototype.appendIdIndex = function (id, node) {
-            if (id in this.idIndex) {
-                // throw new Error(`id:"${id}"已存在`);
-                this.idIndex[id].push(node);
-                return;
-            }
-            this.idIndex[id] = [node];
-        };
-        // overwrite
-        RootNode.prototype.getNodesById = function (id) {
-            return this.idIndex[id];
-        };
-        return RootNode;
+        return DireMetronomeNode;
     }(node_1.Node));
-    exports.RootNode = RootNode;
 });
-//# sourceMappingURL=rootNode.js.map
+//# sourceMappingURL=directionNode.js.map

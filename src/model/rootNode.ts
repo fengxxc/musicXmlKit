@@ -2,8 +2,8 @@ import { Node } from "./node";
 import { Root } from "./interface/root";
 export class RootNode extends Node implements Root {
     private idIndex: Record<string, Node[]>;
-    constructor(parentNode: Node, name: string, attr: Object) {
-        super(parentNode, name, attr);
+    constructor(index: number, parentNode: Node, name: string, attr: Object) {
+        super(index, parentNode, name, attr);
         this.idIndex = {};
     }
     // overwrite

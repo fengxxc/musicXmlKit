@@ -10,7 +10,8 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Node = /** @class */ (function () {
-        function Node(parentNode, name, attr) {
+        function Node(index, parentNode, name, attr) {
+            this.index = index;
             this.parentNode = parentNode;
             this.rootNode = (parentNode ? parentNode.getRootNode() : this);
             this.name = name;
@@ -21,6 +22,13 @@
             this._childNameIndex = {};
             this._childAttrIndex = {};
         }
+        Node.prototype.getIndex = function () {
+            return this.index;
+        };
+        Node.prototype.setIndex = function (_index) {
+            this.index = _index;
+            return this;
+        };
         Node.prototype.getParentNode = function () {
             return this.parentNode;
         };
@@ -79,6 +87,13 @@
             this.appendChildIndex(node, index);
             return this;
         };
+        Node.prototype.putChildNode = function (index, childNode) {
+            this.childNodes[index] = childNode;
+            return this;
+        };
+        Node.prototype.getChildSize = function () {
+            return this.childNodes.length;
+        };
         Node.prototype.appendChildIndex = function (node, index) {
             var _a;
             // name index
@@ -133,6 +148,24 @@
             var t = [];
             this.forEachChildNodes(function (child) { return t.push(child.getFullText()); });
             return this.getText() + t.join('');
+        };
+        /**
+         * 替换节点，包装新类型
+         * @static
+         * @param {Node} source
+         * @param {Node} target new T<? extends Node>()
+         * @memberof Node
+         */
+        Node.replace = function (source, target) {
+            target.setIndex(source.getIndex())
+                .setName(source.getName())
+                .setAttr(source.getAttr())
+                .setParentNode(source.getParentNode())
+                .setChildNodes(source.getChildNodes())
+                .setRootNode(source.getRootNode());
+            source.getParentNode().putChildNode(source.getIndex(), target);
+            source.forEachChildNodes(function (child) { return child.setParentNode(target); });
+            source = null;
         };
         return Node;
     }());

@@ -25,8 +25,8 @@ var __extends = (this && this.__extends) || (function () {
     var node_1 = require("./node");
     var SorePartWiseNode = /** @class */ (function (_super) {
         __extends(SorePartWiseNode, _super);
-        function SorePartWiseNode(parentNode, name, attr) {
-            return _super.call(this, parentNode, name, attr) || this;
+        function SorePartWiseNode(_index, parentNode, name, attr) {
+            return _super.call(this, _index, parentNode, name, attr) || this;
         }
         // @overwrite
         SorePartWiseNode.prototype.Identification = function () {

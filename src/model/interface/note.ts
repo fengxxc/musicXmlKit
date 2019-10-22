@@ -39,6 +39,15 @@ export interface Note {
     Duration(): number;
 
     /**
+     * 延音线， 'start' | 'end'
+     * @returns {string}
+     * @memberof Note
+     */
+    TieType(): string;
+
+    // lyric() TODO
+
+    /**
      * 音轨？
      * @returns {number}
      * @memberof Note
