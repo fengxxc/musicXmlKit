@@ -27,6 +27,7 @@ var __extends = (this && this.__extends) || (function () {
         __extends(DireMetronomeNode, _super);
         function DireMetronomeNode(_index, parentNode, name, attr) {
             var _this = _super.call(this, _index, parentNode, name, attr) || this;
+            _this.tempMetronome = null;
             var dt = _super.prototype.getChildNodesByName.call(_this, 'direction-type');
             if (dt.length != 0) {
                 var m = dt[0].getChildNodesByName('metronome');
@@ -35,24 +36,33 @@ var __extends = (this && this.__extends) || (function () {
             }
             return _this;
         }
-        /* transformOf(directionElementNode: Node) {
-            const node = directionElementNode;
-            this = new DireMetronomeNode(node.getParentNode(), node.getName(), );
-        } */
         DireMetronomeNode.prototype.Directive = function () {
-            return _super.prototype.getAttr.call(this)['directive'];
+            var attr = _super.prototype.getAttr.call(this);
+            return 'directive' in attr ? attr['directive'] : '';
         };
         DireMetronomeNode.prototype.Parentheses = function () {
-            throw new Error("Method not implemented.");
+            if (this.tempMetronome == null)
+                return '';
+            var attr = this.tempMetronome.getAttr();
+            return 'parentheses' in attr ? attr['parentheses'] : '';
         };
         DireMetronomeNode.prototype.DefaultY = function () {
-            throw new Error("Method not implemented.");
+            if (this.tempMetronome == null)
+                return null;
+            var attr = this.tempMetronome.getAttr();
+            return 'default-y' in attr ? parseInt(attr['default-y']) : null;
         };
         DireMetronomeNode.prototype.BeatUnit = function () {
-            throw new Error("Method not implemented.");
+            if (this.tempMetronome == null)
+                return '';
+            var b = this.tempMetronome.getChildNodesByName('beat-unit');
+            return b.length == 0 ? '' : b[0].getFullText();
         };
         DireMetronomeNode.prototype.PerMinute = function () {
-            throw new Error("Method not implemented.");
+            if (this.tempMetronome == null)
+                return null;
+            var b = this.tempMetronome.getChildNodesByName('per-minute');
+            return b.length == 0 ? null : parseInt(b[0].getFullText());
         };
         return DireMetronomeNode;
     }(node_1.Node));

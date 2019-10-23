@@ -20,7 +20,7 @@ export class Node {
         this.parentNode = parentNode;
         this.rootNode = <RootNode>(parentNode ? parentNode.getRootNode() : this);
         this.name = name;
-        this.attr = attr;
+        this.attr = attr || {};
         this.isDoubleTag = true;
         this.childNodes = [];
         this.text = '';
@@ -183,4 +183,29 @@ export class Node {
         source = null;
     }
 
+    static toTreeString(nodes: Node[], prefix: string, emptyTab: string, lineSeparator: string): string {
+        let BRANCH = '├─ ';
+        let LAST_BRANCH = "└─ ";
+        let TAB = "│" + emptyTab;
+
+        let str = [''];
+        for (let i = 0; i < nodes.length; i++) {
+            let n = nodes[i];
+            let pref = prefix + BRANCH;
+            let subPref = prefix+TAB;
+            if (i == nodes.length-1) {
+                pref = prefix + LAST_BRANCH;
+                subPref = prefix + emptyTab;
+            }
+            const attr = Object.keys(n.getAttr()).length > 0 ? ' '+JSON.stringify(n.getAttr()) : '';
+            const text = n.getText() ? ': "' + n.getText() + '"' : '';
+            str.push(pref, n.getName(), attr, text,  lineSeparator);
+            str.push(this.toTreeString(n.getChildNodes(), subPref, emptyTab, lineSeparator));
+        }
+        return str.join('');
+    }
+
+    toTreeString(emptyTab: string, lineSeparator: string): string {
+        return Node.toTreeString([this], '', emptyTab, lineSeparator);
+    }
 }

@@ -15,7 +15,7 @@
             this.parentNode = parentNode;
             this.rootNode = (parentNode ? parentNode.getRootNode() : this);
             this.name = name;
-            this.attr = attr;
+            this.attr = attr || {};
             this.isDoubleTag = true;
             this.childNodes = [];
             this.text = '';
@@ -166,6 +166,29 @@
             source.getParentNode().putChildNode(source.getIndex(), target);
             source.forEachChildNodes(function (child) { return child.setParentNode(target); });
             source = null;
+        };
+        Node.toTreeString = function (nodes, prefix, emptyTab, lineSeparator) {
+            var BRANCH = '├─ ';
+            var LAST_BRANCH = "└─ ";
+            var TAB = "│" + emptyTab;
+            var str = [''];
+            for (var i = 0; i < nodes.length; i++) {
+                var n = nodes[i];
+                var pref = prefix + BRANCH;
+                var subPref = prefix + TAB;
+                if (i == nodes.length - 1) {
+                    pref = prefix + LAST_BRANCH;
+                    subPref = prefix + emptyTab;
+                }
+                var attr = Object.keys(n.getAttr()).length > 0 ? ' ' + JSON.stringify(n.getAttr()) : '';
+                var text = n.getText() ? ': "' + n.getText() + '"' : '';
+                str.push(pref, n.getName(), attr, text, lineSeparator);
+                str.push(this.toTreeString(n.getChildNodes(), subPref, emptyTab, lineSeparator));
+            }
+            return str.join('');
+        };
+        Node.prototype.toTreeString = function (emptyTab, lineSeparator) {
+            return Node.toTreeString([this], '', emptyTab, lineSeparator);
         };
         return Node;
     }());

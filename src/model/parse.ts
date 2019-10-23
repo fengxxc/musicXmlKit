@@ -46,9 +46,6 @@ export class Parser {
                         return null;
                     }
                     if (mountNodeCallback) {
-                        if (node.getName() == 'direction') {
-                            debugger;
-                        }
                         mountNodeCallback(node);
                     }
                     curTag = '', curAttrs = null;

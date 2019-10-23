@@ -59,9 +59,6 @@
                             return null;
                         }
                         if (mountNodeCallback) {
-                            if (node_2.getName() == 'direction') {
-                                debugger;
-                            }
                             mountNodeCallback(node_2);
                         }
                         curTag = '', curAttrs = null;

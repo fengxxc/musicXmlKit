@@ -84,6 +84,8 @@
     console.log(n1.NotationsTechString());
     mxNodeRender_1.MxNodeRender.render(root);
     console.log(root.getFullText());
+    console.log(root.toTreeString('   ', '\n'));
+    document.write(root.toTreeString('&emsp;&emsp;', '<br>'));
     console.timeEnd('-------------执行时间------------');
 });
 // end

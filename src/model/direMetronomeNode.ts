@@ -2,7 +2,7 @@ import { Node } from "./node";
 import { DireMetronome } from "./interface/direMetronome";
 
 export class DireMetronomeNode extends Node implements DireMetronome {
-    private tempMetronome: Node;
+    private tempMetronome: Node = null;
     constructor(_index?: number, parentNode?: Node, name?: string, attr?: Object) {
         super(_index, parentNode, name, attr);
         const dt: Node[] = super.getChildNodesByName('direction-type');
@@ -11,24 +11,29 @@ export class DireMetronomeNode extends Node implements DireMetronome {
             if (m.length != 0) this.tempMetronome = m[0];
         }
     }
-    /* transformOf(directionElementNode: Node) {
-        const node = directionElementNode;
-        this = new DireMetronomeNode(node.getParentNode(), node.getName(), );
-    } */
     Directive(): string {
-        return super.getAttr()['directive'];
+        const attr = super.getAttr();
+        return 'directive' in attr ? attr['directive'] : '';
     }
     Parentheses(): string {
-        throw new Error("Method not implemented.");
+        if (this.tempMetronome == null) return '';
+        const attr = this.tempMetronome.getAttr();
+        return 'parentheses' in attr ? attr['parentheses'] : '';
     }
     DefaultY(): number {
-        throw new Error("Method not implemented.");
+        if (this.tempMetronome == null) return null;
+        const attr = this.tempMetronome.getAttr();
+        return 'default-y' in attr ? parseInt(attr['default-y']) : null;
     }
     BeatUnit(): string {
-        throw new Error("Method not implemented.");
+        if (this.tempMetronome == null) return '';
+        const b: Node[] = this.tempMetronome.getChildNodesByName('beat-unit');
+        return b.length == 0 ? '' : b[0].getFullText();
     }
     PerMinute(): number {
-        throw new Error("Method not implemented.");
+        if (this.tempMetronome == null) return null;
+        const b: Node[] = this.tempMetronome.getChildNodesByName('per-minute');
+        return b.length == 0 ? null : parseInt(b[0].getFullText());
     }
 
     
