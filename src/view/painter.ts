@@ -83,7 +83,7 @@ export class Quill extends Pen {
     }
 
     /**
-     * 画几条水平线
+     * 画几条水平线 原点在左上角
      * @param {Number} x
      * @param {Number} y
      * @param {Number} lineLength 线长
@@ -98,7 +98,7 @@ export class Quill extends Pen {
         ctx.beginPath();
         ctx.lineWidth = lineWidth;
         ctx.strokeStyle = lineColor;
-        for (let i = 0, _y = y; i < lineCont; i++ , _y -= lineSpace) {
+        for (let i = 0, _y = y; i < lineCont; i++ , _y += lineSpace) {
             ctx.moveTo(x, _y);
             ctx.lineTo(x + lineLength, _y);
         }

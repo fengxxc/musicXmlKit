@@ -184,7 +184,7 @@ export class Node {
     }
 
     static toTreeString(nodes: Node[], prefix: string, emptyTab: string, lineSeparator: string): string {
-        let BRANCH = '├─ ';
+        let BRANCH = "├─ ";
         let LAST_BRANCH = "└─ ";
         let TAB = "│" + emptyTab;
 

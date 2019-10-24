@@ -168,7 +168,7 @@
             source = null;
         };
         Node.toTreeString = function (nodes, prefix, emptyTab, lineSeparator) {
-            var BRANCH = '├─ ';
+            var BRANCH = "├─ ";
             var LAST_BRANCH = "└─ ";
             var TAB = "│" + emptyTab;
             var str = [''];

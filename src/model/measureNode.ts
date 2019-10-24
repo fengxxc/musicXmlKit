@@ -1,18 +1,25 @@
 import { Node } from "./Node";
 import { Measure } from "./interface/measure";
 import { NoteNode } from "./noteNode";
+import { DireMetronomeNode } from "./direMetronomeNode";
+import { DireOctaveShiftNode } from "./direOctaveShiftNode";
+import { DireWedgeNode } from "./direWedgeNode";
+import { AttributesNode } from "./attributesNode";
 
 export class MeasureNode extends Node implements Measure {
     Number(): number {
-        const attr = super.getAttr();
-        return ('number' in attr) ? parseInt(attr['number']) : null;
+        try {
+            return parseInt(super.getAttr()['number']);
+        } catch (error) { return null; }
     }
-    Attributes(): Node[] {
-        return super.getChildNodesByName('attributes');
+    Attributes(): AttributesNode {
+        try {
+            return <AttributesNode>super.getChildNodesByName('attributes')[0];
+        } catch (error) { return null; }
     }
-    displayEntities(): (Node | NoteNode)[] {
-        const exclude: Node[] = this.Attributes();
-        return super.getChildNodes().filter(node => exclude.indexOf(node) == -1);
+    displayEntities(): (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode)[] {
+        const exclude: Node = this.Attributes();
+        return super.getChildNodes().filter(node => exclude != node);
     }
 
 

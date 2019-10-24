@@ -29,15 +29,24 @@ var __extends = (this && this.__extends) || (function () {
             return _super !== null && _super.apply(this, arguments) || this;
         }
         MeasureNode.prototype.Number = function () {
-            var attr = _super.prototype.getAttr.call(this);
-            return ('number' in attr) ? parseInt(attr['number']) : null;
+            try {
+                return parseInt(_super.prototype.getAttr.call(this)['number']);
+            }
+            catch (error) {
+                return null;
+            }
         };
         MeasureNode.prototype.Attributes = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'attributes');
+            try {
+                return _super.prototype.getChildNodesByName.call(this, 'attributes')[0];
+            }
+            catch (error) {
+                return null;
+            }
         };
         MeasureNode.prototype.displayEntities = function () {
             var exclude = this.Attributes();
-            return _super.prototype.getChildNodes.call(this).filter(function (node) { return exclude.indexOf(node) == -1; });
+            return _super.prototype.getChildNodes.call(this).filter(function (node) { return exclude != node; });
         };
         return MeasureNode;
     }(Node_1.Node));
