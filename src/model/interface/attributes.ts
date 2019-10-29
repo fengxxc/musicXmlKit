@@ -11,7 +11,7 @@ export interface Attributes {
 
 export interface Clef{
     Number(): number;
-    Sign(): string;
-    Line(): number;
+    Sign(): string; // 谱号 'G' | 'F' | 'C' | 'TAB'
+    Line(): number; // 谱号画在第几线上（从下往上数）
 }
 

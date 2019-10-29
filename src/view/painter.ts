@@ -40,13 +40,19 @@ export class Pen {
     }
 
     /**
-     * 画 图片
+     * 画 图片 原点在左下角
      * @param context, image, 原点横坐标, 原点纵坐标, 宽度, 高度
      */
     static DrawImage(ctx: CanvasRenderingContext2D, img: CanvasImageSource, x: number, y: number, w: number, h: number): void {
         ctx.beginPath();
         ctx.drawImage(img, x, y - h, w, h);
         ctx.closePath();
+    }
+
+    static DrawText(ctx: CanvasRenderingContext2D, x: number, y: number, text: string, font: string, textBaseline: CanvasTextBaseline) {
+        ctx.font = font;
+        ctx.textBaseline = textBaseline;
+        ctx.fillText(text, x, y);
     }
 
     drawPoint(x: number, y: number, r: number, color: string): Pen {
@@ -62,6 +68,10 @@ export class Pen {
     drawImage(img: CanvasImageSource, x: number, y: number, w: number, h: number): Pen {
         Pen.DrawImage(this.ctx, img, x, y, w, h);
         return this;
+    }
+
+    drawText(x: number, y: number, text: string, font: string, textBaseline: CanvasTextBaseline) {
+        Pen.DrawText(this.ctx, x, y, text, font, textBaseline);
     }
 
     context(): CanvasRenderingContext2D {
@@ -111,17 +121,18 @@ export class Quill extends Pen {
      * 画 音符头 原点在中心
      * @param {Number} x
      * @param {Number} y
+     * @param {Number} lineSpace 线之间的距离
      * @param {Boolean} [hollow=false] 是否空心
      * @memberof Quill
      */
-    drawNoteHead(x: number, y: number, hollow: boolean = false): Quill {
+    drawNoteHead(x: number, y: number, lineSpace: number, hollow: boolean = false): Quill {
         let note = this.imgObjs.NOTE_HEAD;
         if (hollow)
             note = this.imgObjs.NOTE_HEAD_HOLLOW;
         /* 将图片转成合适的尺寸 */
         const w = note.width / 2.3;
         const h = note.height / 2;
-        super.drawImage(note, x - w / 2, y - h + Constant.LINE_SPACE / 2, w, h);
+        super.drawImage(note, x - w / 2, y - h + lineSpace / 2, w, h);
         return this;
     }
 
@@ -129,22 +140,73 @@ export class Quill extends Pen {
      * 画 谱号 原点在手绘起笔处
      * @param {Number} x
      * @param {Number} y
-     * @param {String} [type='G'] 谱号类型 'G'/'F'/'C'
+     * @param {String} [sign='G'] 谱号类型 'G' | 'F' | 'C' | 'TAB'
+     * @param {Number} h 指定高度，若null则为原始高度
      * @memberof Quill
      */
-    drawClef(x: number, y: number, type: string = 'G'): Quill {
-        let img: HTMLImageElement = null, _h: number = null, _y: number = null;
-        const ClefHeightSpe: Record<string, number> = {
-            'G': 0.64, // G谱号中心点距顶部 与 G谱号高度的比值
-            'F': 0.857, // F谱号中心点距顶部 与 F谱号高度的比值
-            'C': 0.769, // C谱号中心点距顶部 与 C谱号高度的比值
-        };
-        img = this.imgObjs.CLEF['CLEF_' + type];
-        _h = img.height;
-        _y = y - _h * ClefHeightSpe[type];
-        const w = img.width;
+    drawClef(x: number, y: number, sign: string = 'G', h?: number): Quill {
+        switch (sign) {
+            case 'G':
+                this.drawClefG(x, y, h);
+                break;
+            case 'F':
+                this.drawClefF(x, y, h);
+                break;
+            case 'C':
+                this.drawClefC(x, y, h);
+                break;
+            case 'TAB':
+                this.drawClefTAB(x, y, h);
+                break;
+            default:
+                break;
+        }
+        return this;
+    }
+    drawClefG(x: number, y: number, h?: number): Quill {
+        const clefHeightSpe = 0.64; // G谱号中心点距顶部 与 G谱号高度的比值
+        let img: HTMLImageElement = this.imgObjs['CLEF_G'], _y: number = null;
+        const coe = img.height / img.width;
+        h = h ? h : img.height;
+        // _y = y - h * clefHeightSpe + h;
+        _y = y + (h - h * clefHeightSpe);
+        const w = h / coe;
         const _x = x - w / 2;
-        super.drawImage(img, _x, _y, w, _h);
+        super.drawImage(img, _x, _y, w, h);
+        return this;
+    }
+    drawClefF(x: number, y: number, h?: number): Quill {
+        const clefHeightSpe = 0.317; // F谱号中心点距顶部 与 F谱号高度的比值
+        let img: HTMLImageElement = this.imgObjs['CLEF_F'], _y: number = null;
+        const coe = img.height / img.width;
+        h = h ? h : img.height;
+        // _y = y + h * clefHeightSpe;
+        _y = y + (h - h * clefHeightSpe);
+        const w = h / coe;
+        const _x = x - w / 2;
+        super.drawImage(img, _x, _y, w, h);
+        return this;
+    }
+    drawClefC(x: number, y: number, h?: number): Quill {
+        const clefHeightSpe = 0.769; // C谱号中心点距顶部 与 C谱号高度的比值
+        let img: HTMLImageElement = this.imgObjs['CLEF_C'], _y: number = null;
+        const coe = img.height / img.width;
+        h = h ? h : img.height;
+        _y = y + (h - h * clefHeightSpe);
+        const w = h / coe;
+        const _x = x - w / 2;
+        super.drawImage(img, _x, _y, w, h);
+        return this;
+    }
+    drawClefTAB(x: number, y: number, h?: number): Quill {
+        const clefHeightSpe = 0;
+        let img: HTMLImageElement = this.imgObjs['CLEF_TAB'], _y: number = null;
+        const coe = img.height / img.width;
+        h = h ? h : img.height / 2;
+        _y = y + (h - h * clefHeightSpe);
+        const w = h / coe;
+        const _x = x - w / 2;
+        super.drawImage(img, _x, _y, w, h);
         return this;
     }
 
@@ -156,7 +218,7 @@ export class Quill extends Pen {
      * @memberof Quill
      */
     drawDot(x: number, y: number, color: string): Quill {
-        super.drawPoint(x, y, Constant.DOT_R, color);
+        super.drawPoint(x, y, 2, color);
         return this;
     }
 
@@ -164,7 +226,7 @@ export class Quill extends Pen {
      * 画 升降符号 原点在左中
      * @param {Number} x
      * @param {Number} y
-     * @param {String} type
+     * @param {String} type '#' | 'b'
      * @memberof Quill
      */
     drawTransp(x: number, y: number, type: string): Quill {
@@ -176,7 +238,7 @@ export class Quill extends Pen {
         /* 将图片转成合适的尺寸 */
         w = img.width / 4;
         h = img.width / 2;
-        super.drawImage(img, x, y - h / 2, w, h);
+        super.drawImage(img, x, y + h / 2, w, h);
         return this;
     }
 
@@ -197,5 +259,13 @@ export class Quill extends Pen {
         }
         super.drawImage(img, oX, oY, w, h);
         return this;
+    }
+
+    drawBeats(x: number, y: number, beats: number, beatsType: number, h: number) {
+        const fontSize = h / 2;
+        const _font = fontSize + "px Georgia";
+        super.drawText(x, y, beatsType+'', _font, 'bottom');
+        super.drawText(x, y - fontSize, beats+'', _font, 'bottom');
+        
     }
 }

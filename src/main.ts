@@ -10,6 +10,7 @@ import { Render } from "./view/render";
 import { Quill } from "./view/painter";
 import { Utils } from "./Utils";
 import { Constant } from "./view/constant";
+import { Config } from "./config";
 
 let xml = `
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -909,10 +910,13 @@ console.log(root.toTreeString('   ', '\n'));
 Utils.loadImgs(Constant.ImgSrc, imgObj => {
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
     const quill: Quill = new Quill(canvas.getContext('2d'), imgObj);
-    const render: Render = new Render(root, quill);
+    const config = new Config(canvas);
+    const render: Render = new Render(root, quill, config);
     render.main();
 
+    // quill.drawClef(50, 40, 'G');
+    // quill.drawPoint(50, 40, 2, 'red');
+    console.timeEnd('-------------执行时间------------');
 })
 
-console.timeEnd('-------------执行时间------------');
 // end
