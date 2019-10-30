@@ -88,9 +88,9 @@
         Render.prototype.renderBeats = function (beats, beatsType, clefSign) {
             if (clefSign == 'TAB')
                 return;
-            this.quill.drawBeats(this.posX, this.posY, 4, 8, 4 * this.config.LineSpace);
+            this.quill.drawBeats(this.posX + 0.5, this.posY + 0.5, beats, beatsType, 4 * this.config.LineSpace);
             this.step();
-            this.quill.drawPoint(this.posX, this.posY, 2.5, 'red');
+            this.quill.drawPoint(this.posX + 0.5, this.posY + 0.5, 2, 'blue');
         };
         Render.prototype.renderKeySign = function (fifths, mode, clefSign, clefLine) {
             var _this = this;

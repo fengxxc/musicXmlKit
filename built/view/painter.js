@@ -37,17 +37,20 @@ var __extends = (this && this.__extends) || (function () {
          * @param context, 横坐标, 纵坐标, 半径, 颜色
          */
         Pen.DrawPoint = function (ctx, x, y, r, color) {
+            var style = ctx.fillStyle;
             ctx.fillStyle = color;
             ctx.beginPath();
             ctx.arc(x, y, r, 0, Math.PI * 2, true);
             ctx.closePath();
             ctx.fill();
+            ctx.fillStyle = style;
         };
         /**
          * 画 两点间连线线
          * @param context, 始横坐标, 始纵坐标, 终横坐标, 终纵坐标, 线宽度, 颜色
          */
         Pen.DrawLine = function (ctx, x, y, x2, y2, lineWidth, color) {
+            var style = ctx.strokeStyle;
             ctx.beginPath();
             ctx.lineWidth = lineWidth;
             ctx.strokeStyle = color;
@@ -55,6 +58,7 @@ var __extends = (this && this.__extends) || (function () {
             ctx.lineTo(x2, y2);
             ctx.stroke();
             ctx.closePath();
+            ctx.strokeStyle = style;
         };
         /**
          * 画 图片 原点在左下角
@@ -271,7 +275,7 @@ var __extends = (this && this.__extends) || (function () {
         };
         Quill.prototype.drawBeats = function (x, y, beats, beatsType, h) {
             var fontSize = h / 2;
-            var _font = fontSize + "px Georgia";
+            var _font = 'bold ' + fontSize + "px Microsoft JhengHei";
             _super.prototype.drawText.call(this, x, y, beatsType + '', _font, 'bottom');
             _super.prototype.drawText.call(this, x, y - fontSize, beats + '', _font, 'bottom');
         };

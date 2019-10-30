@@ -18,11 +18,13 @@ export class Pen {
      * @param context, 横坐标, 纵坐标, 半径, 颜色
      */
     static DrawPoint(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string): void {
+        const style = ctx.fillStyle;
         ctx.fillStyle = color;
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2, true);
         ctx.closePath();
         ctx.fill();
+        ctx.fillStyle = style;
     }
 
     /**
@@ -30,6 +32,7 @@ export class Pen {
      * @param context, 始横坐标, 始纵坐标, 终横坐标, 终纵坐标, 线宽度, 颜色
      */
     static DrawLine(ctx: CanvasRenderingContext2D, x: number, y: number, x2: number, y2: number, lineWidth: number, color: string): void {
+        const style = ctx.strokeStyle;
         ctx.beginPath();
         ctx.lineWidth = lineWidth;
         ctx.strokeStyle = color;
@@ -37,6 +40,7 @@ export class Pen {
         ctx.lineTo(x2, y2);
         ctx.stroke();
         ctx.closePath();
+        ctx.strokeStyle = style;
     }
 
     /**
@@ -263,7 +267,7 @@ export class Quill extends Pen {
 
     drawBeats(x: number, y: number, beats: number, beatsType: number, h: number) {
         const fontSize = h / 2;
-        const _font = fontSize + "px Georgia";
+        const _font = 'bold ' + fontSize + "px Microsoft JhengHei";
         super.drawText(x, y, beatsType+'', _font, 'bottom');
         super.drawText(x, y - fontSize, beats+'', _font, 'bottom');
         
