@@ -1,5 +1,5 @@
-import { Node } from "./node.js";
-import { DireWedge } from "./interface/direWedge.js";
+import { Node } from "./node";
+import { DireWedge } from "./interface/direWedge";
 
 export class DireWedgeNode extends Node implements DireWedge {
     Type(): string {

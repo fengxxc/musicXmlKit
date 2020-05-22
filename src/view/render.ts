@@ -1,12 +1,12 @@
-import { Node } from "../model/node.js";
-import { RootNode } from "../model/rootNode.js";
-import { SorePartWiseNode } from "../model/sorePartWiseNode.js";
-import { MeasureNode } from "../model/measureNode.js";
-import { AttributesNode } from "../model/attributesNode.js";
-import { Clef } from "../model/interface/attributes.js";
-import { Quill } from "./painter.js";
-import { Config } from "../config.js";
-import { Constant } from "./constant.js";
+import { Node } from "../model/node";
+import { RootNode } from "../model/rootNode";
+import { SorePartWiseNode } from "../model/sorePartWiseNode";
+import { MeasureNode } from "../model/measureNode";
+import { AttributesNode } from "../model/attributesNode";
+import { Clef } from "../model/interface/attributes";
+import { Quill } from "./painter";
+import { Config } from "../config";
+import { Constant } from "./constant";
 
 export class Render {
     // 先写个粗版的(((φ(◎ロ◎;)φ)))

@@ -1,5 +1,5 @@
-import { Backup } from "./interface/backup.js";
-import { Node } from "./node.js";
+import { Backup } from "./interface/backup";
+import { Node } from "./node";
 
 export class BackupNode extends Node implements Backup {
     Duration(): number {

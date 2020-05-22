@@ -1,5 +1,5 @@
-import { Node } from "./node.js";
-import { Note } from "./interface/note.js";
+import { Node } from "./node";
+import { Note } from "./interface/note";
 
 export class NoteNode extends Node implements Note {
     private tempRest: boolean = null;

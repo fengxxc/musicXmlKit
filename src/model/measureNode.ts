@@ -1,10 +1,10 @@
-import { Node } from "./Node.js";
-import { Measure } from "./interface/measure.js";
-import { NoteNode } from "./noteNode.js";
-import { DireMetronomeNode } from "./direMetronomeNode.js";
-import { DireOctaveShiftNode } from "./direOctaveShiftNode.js";
-import { DireWedgeNode } from "./direWedgeNode.js";
-import { AttributesNode } from "./attributesNode.js";
+import { Node } from "./Node";
+import { Measure } from "./interface/measure";
+import { NoteNode } from "./noteNode";
+import { DireMetronomeNode } from "./direMetronomeNode";
+import { DireOctaveShiftNode } from "./direOctaveShiftNode";
+import { DireWedgeNode } from "./direWedgeNode";
+import { AttributesNode } from "./attributesNode";
 
 export class MeasureNode extends Node implements Measure {
     Number(): number {

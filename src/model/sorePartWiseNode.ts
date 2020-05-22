@@ -1,5 +1,5 @@
-import { Node } from "./node.js";
-import { SorePartWise } from "./interface/sorePartWise.js";
+import { Node } from "./node";
+import { SorePartWise } from "./interface/sorePartWise";
 
 export class SorePartWiseNode extends Node implements SorePartWise {
     constructor(_index: number, parentNode: Node, name: string, attr: Object) {

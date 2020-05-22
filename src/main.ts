@@ -1,16 +1,16 @@
-import { Parser } from "./model/parser.js";
-import { Node } from "./model/node.js";
-import { MxNodeRender } from "./mxNodeRender.js";
-import { SorePartWiseNode } from "./model/sorePartWiseNode.js";
-import { NoteNode } from "./model/noteNode.js";
-import { MeasureNode } from "./model/measureNode.js";
-import { DireMetronomeNode } from "./model/direMetronomeNode.js";
-import { AttributesNode, ClefNode } from "./model/attributesNode.js";
-import { Render } from "./view/render.js";
-import { Quill } from "./view/painter.js";
-import { Utils } from "./utils.js";
-import { Constant } from "./view/constant.js";
-import { Config } from "./config.js";
+import { Parser } from "./model/parser";
+import { Node } from "./model/node";
+import { MxNodeRender } from "./mxNodeRender";
+import { SorePartWiseNode } from "./model/sorePartWiseNode";
+import { NoteNode } from "./model/noteNode";
+import { MeasureNode } from "./model/measureNode";
+import { DireMetronomeNode } from "./model/direMetronomeNode";
+import { AttributesNode, ClefNode } from "./model/attributesNode";
+import { Render } from "./view/render";
+import { Quill } from "./view/painter";
+import { Utils } from "./utils";
+import { Constant } from "./view/constant";
+import { Config } from "./config";
 
 let xml = `
 <?xml version="1.0" encoding="UTF-8" ?>

@@ -1,4 +1,4 @@
-import { Constant } from "./constant.js";
+import { Constant } from "./constant";
 
 /**
  * 基础画笔

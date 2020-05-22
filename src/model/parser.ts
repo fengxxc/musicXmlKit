@@ -1,10 +1,10 @@
-import { Node } from "./node.js";
-import { RootNode } from "./rootNode.js";
-import { SorePartWiseNode } from "./sorePartWiseNode.js";
-import { MeasureNode } from "./measureNode.js";
-import { NoteNode } from "./noteNode.js";
-import { DireMetronomeNode } from "./direMetronomeNode.js";
-import { AttributesNode, ClefNode } from "./attributesNode.js";
+import { Node } from "./node";
+import { RootNode } from "./rootNode";
+import { SorePartWiseNode } from "./sorePartWiseNode";
+import { MeasureNode } from "./measureNode";
+import { NoteNode } from "./noteNode";
+import { DireMetronomeNode } from "./direMetronomeNode";
+import { AttributesNode, ClefNode } from "./attributesNode";
 
 export class Parser {
     static parseXml(
