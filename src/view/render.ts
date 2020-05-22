@@ -1,12 +1,13 @@
-import { Node } from "../model/node";
-import { RootNode } from "../model/rootNode";
-import { SorePartWiseNode } from "../model/sorePartWiseNode";
-import { MeasureNode } from "../model/measureNode";
-import { AttributesNode } from "../model/attributesNode";
-import { Clef } from "../model/interface/attributes";
-import { Quill } from "./painter";
-import { Config } from "../config";
-import { Constant } from "./constant";
+import { Node } from "../model/node.js";
+import { RootNode } from "../model/rootNode.js";
+import { SorePartWiseNode } from "../model/sorePartWiseNode.js";
+import { MeasureNode } from "../model/measureNode.js";
+import { AttributesNode } from "../model/attributesNode.js";
+import { Clef } from "../model/interface/attributes.js";
+import { Quill } from "./painter.js";
+import { Config } from "../config.js";
+import { Constant } from "./constant.js";
+
 export class Render {
     // 先写个粗版的(((φ(◎ロ◎;)φ)))
     private mxn: RootNode;
@@ -24,25 +25,19 @@ export class Render {
         this.mxn = mxn;
         return this;
     }
-    getMxn(): RootNode {
-        return this.mxn;
-    }
+    getMxn(): RootNode { return this.mxn; }
 
     setQuill(quill: Quill) {
         this.quill = quill;
         return this;
     }
-    getQuill() {
-        return this.quill;
-    }
+    getQuill() { return this.quill; }
 
     setConfig(config: Config) {
         this.config = config;
         return this;
     }
-    getConfig() {
-        return this.config;
-    }
+    getConfig() { return this.config; }
 
     main(): void {
         const spw: SorePartWiseNode = <SorePartWiseNode>this.mxn.getChildNodesByName('score-partwise')[0];
@@ -105,6 +100,13 @@ export class Render {
         this.quill.drawPoint(this.posX+0.5, this.posY+0.5, 2, 'blue');
     }
 
+    /**
+     * 渲染音调符号 
+     * @param fifths 五度圈里的位置，暂时这么理解
+     * @param mode 调性：大调、小调 [major | minor]
+     * @param clefSign 谱号 [TAB | G | F | C]
+     * @param clefLine 
+     */
     renderKeySign(fifths: number, mode: string, clefSign: string, clefLine: number): void {
         /**
          * musicXml中fifths值说明：
@@ -128,14 +130,14 @@ export class Render {
              * key是fifths值，正数代表是'#'，负数代表'b'
              * value是数组；后面的数字代表位置在五线谱上第几线（+.5就是间）
              */
-            '0': [],
-            '1': [5],
-            '2': [3.5, 5],
-            '3': [3.5, 5, 5.5],
-            '4': [3.5, 4, 5, 5.5],
-            '5': [2.5, 3.5, 4, 5, 5.5],
-            '6': [2.5, 3.5, 4, 4.5, 5, 5.5],
-            '7': [2.5, 3, 3.5, 4, 4.5, 5, 5.5],
+            '0' : [],
+            '1' : [5],
+            '2' : [3.5, 5],
+            '3' : [3.5, 5, 5.5],
+            '4' : [3.5, 4, 5, 5.5],
+            '5' : [2.5, 3.5, 4, 5, 5.5],
+            '6' : [2.5, 3.5, 4, 4.5, 5, 5.5],
+            '7' : [2.5, 3, 3.5, 4, 4.5, 5, 5.5],
             '-7': [1.5, 2, 2.5, 3, 3.5, 4, 4.5],
             '-6': [2, 2.5, 3, 3.5, 4, 4.5],
             '-5': [2, 2.5, 3, 4, 4.5],
@@ -153,7 +155,7 @@ export class Render {
         } else if (clefSign + clefLine == 'C4') {
             pos = posG[fifths].map(p => p + 0.5);
         }
-        this.posY += 4*this.config.LineSpace;
+        this.posY += 4 * this.config.LineSpace;
         pos.forEach(p => {
             // TODO
             this.quill.drawTransp(this.posX, this.posY - (p-1) * this.config.LineSpace, Constant.SHARP);

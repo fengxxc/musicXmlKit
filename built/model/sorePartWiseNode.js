@@ -11,41 +11,29 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-(function (factory) {
-    if (typeof module === "object" && typeof module.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== undefined) module.exports = v;
+import { Node } from "./node.js";
+var SorePartWiseNode = /** @class */ (function (_super) {
+    __extends(SorePartWiseNode, _super);
+    function SorePartWiseNode(_index, parentNode, name, attr) {
+        return _super.call(this, _index, parentNode, name, attr) || this;
     }
-    else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./node"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var node_1 = require("./node");
-    var SorePartWiseNode = /** @class */ (function (_super) {
-        __extends(SorePartWiseNode, _super);
-        function SorePartWiseNode(_index, parentNode, name, attr) {
-            return _super.call(this, _index, parentNode, name, attr) || this;
-        }
-        // @overwrite
-        SorePartWiseNode.prototype.Identification = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'identification')[0];
-        };
-        // @overwrite
-        SorePartWiseNode.prototype.Defaults = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'defaults')[0];
-        };
-        // @overwrite
-        SorePartWiseNode.prototype.PartList = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'part-list');
-        };
-        // @overwrite
-        SorePartWiseNode.prototype.Part = function () {
-            return _super.prototype.getChildNodesByName.call(this, 'part');
-        };
-        return SorePartWiseNode;
-    }(node_1.Node));
-    exports.SorePartWiseNode = SorePartWiseNode;
-});
+    // @overwrite
+    SorePartWiseNode.prototype.Identification = function () {
+        return _super.prototype.getChildNodesByName.call(this, 'identification')[0];
+    };
+    // @overwrite
+    SorePartWiseNode.prototype.Defaults = function () {
+        return _super.prototype.getChildNodesByName.call(this, 'defaults')[0];
+    };
+    // @overwrite
+    SorePartWiseNode.prototype.PartList = function () {
+        return _super.prototype.getChildNodesByName.call(this, 'part-list');
+    };
+    // @overwrite
+    SorePartWiseNode.prototype.Part = function () {
+        return _super.prototype.getChildNodesByName.call(this, 'part');
+    };
+    return SorePartWiseNode;
+}(Node));
+export { SorePartWiseNode };
 //# sourceMappingURL=sorePartWiseNode.js.map

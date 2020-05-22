@@ -1,4 +1,4 @@
-import { Constant } from "./constant";
+import { Constant } from "./constant.js";
 
 /**
  * 基础画笔
@@ -241,7 +241,7 @@ export class Quill extends Pen {
             img = this.imgObjs.FLAT;
         /* 将图片转成合适的尺寸 */
         w = img.width / 4;
-        h = img.width / 2;
+        h = img.width / 1.5;
         super.drawImage(img, x, y + h / 2, w, h);
         return this;
     }

@@ -1,3 +1,4 @@
 .vscode/*
 *.xmind
 node_modules/**
+built/**

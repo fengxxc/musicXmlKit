@@ -1,5 +1,5 @@
-import { Node } from "./node";
-import { DireOctaveShift } from "./interface/direOctaveShift";
+import { Node } from "./node.js";
+import { DireOctaveShift } from "./interface/direOctaveShift.js";
 
 export class DireOctaveShiftNode extends Node implements DireOctaveShift {
     Size(): number {

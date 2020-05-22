@@ -1,5 +1,5 @@
-import { Node } from "./node";
-import { DireMetronome } from "./interface/direMetronome";
+import { Node } from "./node.js";
+import { DireMetronome } from "./interface/direMetronome.js";
 
 export class DireMetronomeNode extends Node implements DireMetronome {
     private tempMetronome: Node = null;

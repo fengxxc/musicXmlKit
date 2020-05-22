@@ -1,5 +1,10 @@
-import { Node } from "./node";
-import { RootNode } from "./rootNode";
+import { Node } from "./node.js";
+import { RootNode } from "./rootNode.js";
+import { SorePartWiseNode } from "./sorePartWiseNode.js";
+import { MeasureNode } from "./measureNode.js";
+import { NoteNode } from "./noteNode.js";
+import { DireMetronomeNode } from "./direMetronomeNode.js";
+import { AttributesNode, ClefNode } from "./attributesNode.js";
 
 export class Parser {
     static parseXml(
@@ -99,5 +104,51 @@ export class Parser {
         }
 
         return <RootNode>root;
+    }
+
+    static parseMusicXml(xmlStr: string): RootNode {
+        return Parser.parseXml(xmlStr, (index: number, parent: Node, tag: string, attrs: Object) => {
+            let res: Node;
+            switch (tag) {
+                case 'score-partwise':
+                    res = new SorePartWiseNode(index, parent, tag, attrs);
+                    break;
+                case 'measure':
+                    res = new MeasureNode(index, parent, tag, attrs);
+                    break;
+                case 'note':
+                    res = new NoteNode(index, parent, tag, attrs);
+                    break;
+                case 'metronome':
+                    /* let direNode: Node = parent.getParentNode();
+                    const newDireNode = new DireMetronomeNode(direNode.getIndex(), direNode.getParentNode(), direNode.getName(), direNode.getAttr());
+                    Node.replace(parent.getParentNode(), newDireNode); */
+                    const direNode: Node = parent.getParentNode();
+                    Node.replace(direNode, new DireMetronomeNode());
+                    res = new Node(index, parent, tag, attrs);
+                    break;
+                case 'attributes':
+                    res = new AttributesNode(index, parent, tag, attrs);
+                    break;
+                case 'clef':
+                    res = new ClefNode(index, parent, tag, attrs);
+                    break;
+                default:
+                    res = new Node(index, parent, tag, attrs);
+                    break;
+            }
+            return res;
+        }, node => {
+            // let res: Node = node;
+            /* switch (node.getName()) {
+                case 'metronome':
+                    // const direNode: Node = node.getParentNode().getParentNode();
+                    // Node.replace(direNode, new DireMetronomeNode());
+                    break;
+                default:
+                    break;
+            } */
+            // return res;
+        });
     }
 } 

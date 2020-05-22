@@ -1,4 +1,4 @@
-import { RootNode } from "./rootNode";
+import { RootNode } from "./rootNode.js";
 
 export class Node {
     // 在父节点中的孩子索引（家中排老几_(:з)∠)_）

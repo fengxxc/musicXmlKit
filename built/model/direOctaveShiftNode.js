@@ -11,41 +11,29 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-(function (factory) {
-    if (typeof module === "object" && typeof module.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== undefined) module.exports = v;
+import { Node } from "./node.js";
+var DireOctaveShiftNode = /** @class */ (function (_super) {
+    __extends(DireOctaveShiftNode, _super);
+    function DireOctaveShiftNode() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-    else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./node"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var node_1 = require("./node");
-    var DireOctaveShiftNode = /** @class */ (function (_super) {
-        __extends(DireOctaveShiftNode, _super);
-        function DireOctaveShiftNode() {
-            return _super !== null && _super.apply(this, arguments) || this;
+    DireOctaveShiftNode.prototype.Size = function () {
+        try {
+            return parseInt(_super.prototype.getChildNodesByName.call(this, 'direction-type')[0].getChildNodesByName('octave-shift')[0].getAttr()['size']);
         }
-        DireOctaveShiftNode.prototype.Size = function () {
-            try {
-                return parseInt(_super.prototype.getChildNodesByName.call(this, 'direction-type')[0].getChildNodesByName('octave-shift')[0].getAttr()['size']);
-            }
-            catch (error) {
-                return null;
-            }
-        };
-        DireOctaveShiftNode.prototype.Type = function () {
-            try {
-                return _super.prototype.getChildNodesByName.call(this, 'direction-type')[0].getChildNodesByName('octave-shift')[0].getAttr()['type'];
-            }
-            catch (error) {
-                return '';
-            }
-        };
-        return DireOctaveShiftNode;
-    }(node_1.Node));
-    exports.DireOctaveShiftNode = DireOctaveShiftNode;
-});
+        catch (error) {
+            return null;
+        }
+    };
+    DireOctaveShiftNode.prototype.Type = function () {
+        try {
+            return _super.prototype.getChildNodesByName.call(this, 'direction-type')[0].getChildNodesByName('octave-shift')[0].getAttr()['type'];
+        }
+        catch (error) {
+            return '';
+        }
+    };
+    return DireOctaveShiftNode;
+}(Node));
+export { DireOctaveShiftNode };
 //# sourceMappingURL=direOctaveShiftNode.js.map

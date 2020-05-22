@@ -1,5 +1,5 @@
-import { Node } from "./node";
-import { Attributes, Clef } from "./interface/attributes";
+import { Node } from "./node.js";
+import { Attributes, Clef } from "./interface/attributes.js";
 
 export class AttributesNode extends Node implements Attributes {
     Divisions(): number {

@@ -11,40 +11,28 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-(function (factory) {
-    if (typeof module === "object" && typeof module.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== undefined) module.exports = v;
+import { Node } from "./node.js";
+var RootNode = /** @class */ (function (_super) {
+    __extends(RootNode, _super);
+    function RootNode(index, parentNode, name, attr) {
+        var _this = _super.call(this, index, parentNode, name, attr) || this;
+        _this.idIndex = {};
+        return _this;
     }
-    else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./node"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var node_1 = require("./node");
-    var RootNode = /** @class */ (function (_super) {
-        __extends(RootNode, _super);
-        function RootNode(index, parentNode, name, attr) {
-            var _this = _super.call(this, index, parentNode, name, attr) || this;
-            _this.idIndex = {};
-            return _this;
+    // overwrite
+    RootNode.prototype.appendIdIndex = function (id, node) {
+        if (id in this.idIndex) {
+            // throw new Error(`id:"${id}"已存在`);
+            this.idIndex[id].push(node);
+            return;
         }
-        // overwrite
-        RootNode.prototype.appendIdIndex = function (id, node) {
-            if (id in this.idIndex) {
-                // throw new Error(`id:"${id}"已存在`);
-                this.idIndex[id].push(node);
-                return;
-            }
-            this.idIndex[id] = [node];
-        };
-        // overwrite
-        RootNode.prototype.getNodesById = function (id) {
-            return this.idIndex[id];
-        };
-        return RootNode;
-    }(node_1.Node));
-    exports.RootNode = RootNode;
-});
+        this.idIndex[id] = [node];
+    };
+    // overwrite
+    RootNode.prototype.getNodesById = function (id) {
+        return this.idIndex[id];
+    };
+    return RootNode;
+}(Node));
+export { RootNode };
 //# sourceMappingURL=rootNode.js.map

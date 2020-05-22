@@ -1,10 +1,10 @@
-export const Utils = {
+export class Utils {
     /**
      * async loading image
      * @param {Object} imgSrc such as { name: 'aa/bb.png', ... }
      * @param {Function} callback
      */
-    loadImgs: (imgSrc: Object, callback: (imgObjs: Record<string, HTMLImageElement>) => void) => {
+    static loadImgs(imgSrc: Object, callback: (imgObjs: Record<string, HTMLImageElement>) => void) {
         /**
          * callback param is imgObjs
          * imgObjs such as { name: imgDom, ... }
@@ -32,6 +32,36 @@ export const Utils = {
                     callback.call(callback, imgObjs);
             }
         }, 20)
+    }
+
+    static ajaxGetSync(url: string): string {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, false);
+        xhr.overrideMimeType("text/html;charset=utf-8");
+        xhr.send();
+        return xhr.responseText;
+    }
+
+    static ajaxGetAsync(url: string, callback: (res: string) => void): void {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.overrideMimeType("text/html;charset=utf-8");
+        xhr.send();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                callback(xhr.responseText);
+            }
+        };
+    }
+
+    static getFileSync(filePathname: string): string {
+        return Utils.ajaxGetSync(filePathname);
+    }
+
+    static getFileAsync(filePathname: string, callback: (res: string) => void): void {
+        Utils.ajaxGetAsync(filePathname, (res: string) => {
+            callback(res);
+        });
     }
 
 }

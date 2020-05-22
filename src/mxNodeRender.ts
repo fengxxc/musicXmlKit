@@ -1,4 +1,4 @@
-import { Node } from "./model/node";
+import { Node } from "./model/node.js";
 
 export class MxNodeRender {
     

@@ -1,18 +1,3 @@
-import { Parser } from "./model/parser.js";
-import { Node } from "./model/node.js";
-import { MxNodeRender } from "./mxNodeRender.js";
-import { SorePartWiseNode } from "./model/sorePartWiseNode.js";
-import { NoteNode } from "./model/noteNode.js";
-import { MeasureNode } from "./model/measureNode.js";
-import { DireMetronomeNode } from "./model/direMetronomeNode.js";
-import { AttributesNode, ClefNode } from "./model/attributesNode.js";
-import { Render } from "./view/render.js";
-import { Quill } from "./view/painter.js";
-import { Utils } from "./utils.js";
-import { Constant } from "./view/constant.js";
-import { Config } from "./config.js";
-
-let xml = `
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE score-partwise PUBLIC '-//Recordare//DTD MusicXML 2.0 Partwise//EN' 'http://www.musicxml.org/dtds/2.0/partwise.dtd'>
 <score-partwise version="2.0">
@@ -820,58 +805,3 @@ let xml = `
         </measure>
     </part>
 </score-partwise>
-`;
-/* xml = `
-<qwe>
-    <as id="1" class= "xx">
-        ttt
-    </as>
-    <ds/>
-    <zz></zz>
-</qwe>`; */
-
-const root = Parser.parseMusicXml(xml);
-const spn = <SorePartWiseNode>root.getChildNodesByName('score-partwise')[0];
-
-// start
-console.time('-------------执行时间------------');
-
-console.log('~~~ test MeasureNode ~~~');
-const m: MeasureNode[] = <MeasureNode[]>spn.getChildNodesByName('part')[0].getChildNodesByName('measure');
-console.log(m);
-console.log(m[0].Number());
-console.log(m[0].Attributes());
-console.log(m[0].displayEntities());
-
-
-console.log('~~~ test NoteNode ~~~');
-const n1 = <NoteNode>m[0].getChildNodesByName('note')[0];
-console.log(n1.Duration());
-console.log(n1.PitchStep());
-console.log(n1.PitchOctave());
-console.log(n1.PitchAlter());
-console.log(n1.NotationsDynamics());
-console.log(n1.NotationsTechFret());
-console.log(n1.NotationsTechString());
-
-
-MxNodeRender.render(root);
-
-console.log(root.getFullText());
-
-console.log(root.toTreeString('   ', '\n'));
-// document.write(root.toTreeString('&emsp;&emsp;', '<br>'));
-
-Utils.loadImgs(Constant.ImgSrc, imgObj => {
-    const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
-    const quill: Quill = new Quill(canvas.getContext('2d'), imgObj);
-    const config = new Config(canvas);
-    const render: Render = new Render(root, quill, config);
-    render.main();
-
-    // quill.drawClef(50, 40, 'G');
-    // quill.drawPoint(50, 40, 2, 'red');
-    console.timeEnd('-------------执行时间------------');
-})
-
-// end

@@ -1,5 +1,5 @@
-import { Node } from "./node";
-import { Root } from "./interface/root";
+import { Node } from "./node.js";
+import { Root } from "./interface/root.js";
 export class RootNode extends Node implements Root {
     private idIndex: Record<string, Node[]>;
     constructor(index: number, parentNode: Node, name: string, attr: Object) {
