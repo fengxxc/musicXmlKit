@@ -13,17 +13,17 @@ export class Node {
 
     // json as: Map<string, number[]> {name: [index], name2: [index2, index3]} 待优化...
     private _childNameIndexer: Record<string, number[]>;
-    private _childAttrIndex: Record<string, Record<string, number[]>>;
+    /* private */ _childAttrIndex: Record<string, Record<string, number[]>>;
 
     constructor(index?: number, parentNode?: Node, name?: string, attr?: Object) {
-        this.index = index;
-        this.parentNode = parentNode;
-        this.rootNode = <RootNode>(parentNode ? parentNode.getRootNode() : this);
-        this.name = name;
-        this.attr = attr || {};
-        this.isDoubleTag = true;
-        this.childNodes = [];
-        this.text = '';
+        this.setIndex(index)
+            .setRootNode(<RootNode>(parentNode ? parentNode.getRootNode() : this))
+            .setName(name)
+            .setAttr(attr || {})
+            .setIsDoubleTag(true)
+            .setChildNodes([])
+            .setText('')
+            .setParentNode(parentNode);
         this._childNameIndexer = {};
         this._childAttrIndex = {};
     }
@@ -40,7 +40,11 @@ export class Node {
         return this.parentNode;
     }
     setParentNode(parentNode: Node): Node {
+        if (parentNode == null) {
+            return this;
+        }
         this.parentNode = parentNode;
+        this.parentNode.addChileNode(this);
         return this;
     }
 
@@ -93,9 +97,14 @@ export class Node {
         return this;
     }
     addChileNode(node: Node): Node {
-        this.childNodes.push(node);
-        const index = this.childNodes.length - 1;
-        this.appendChildIndex(node, index);
+        const childIndex = node.getIndex();
+        if (childIndex == null) {
+            this.childNodes.push(node);
+            this.appendChildIndex(node, this.childNodes.length - 1);
+        } else {
+            this.childNodes[childIndex] = node;
+            this.appendChildIndex(node, childIndex);
+        }
         return this;
     }
     putChildNode(index: number, childNode: Node): Node {
@@ -207,5 +216,9 @@ export class Node {
 
     toTreeString(emptyTab: string, lineSeparator: string): string {
         return Node.toTreeString([this], '', emptyTab, lineSeparator);
+    }
+
+    toString(): string {
+        return this.toTreeString('   ', '\n');
     }
 }
