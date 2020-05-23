@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { readFileSync } from "fs";
 import { MeasureNode } from "../../src/model/measureNode";
 
-describe('parser test', () => {
+describe('Parser test', () => {
     const xml = readFileSync('./test/model/testData1.xml', 'utf-8');
     const root = Parser.parseMusicXml(xml);
     const spn = <SorePartWiseNode>root.getChildNodesByName('score-partwise')[0];

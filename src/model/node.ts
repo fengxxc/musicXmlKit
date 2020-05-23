@@ -1,7 +1,7 @@
 import { RootNode } from "./rootNode";
 
 export class Node {
-    // 在父节点中的孩子索引（家中排老几_(:з)∠)_）
+    // 在父节点中的孩子索引， 从0开始
     private index: number;
     private parentNode: Node;
     private rootNode: RootNode;
@@ -12,7 +12,7 @@ export class Node {
     private text: string;
 
     // json as: Map<string, number[]> {name: [index], name2: [index2, index3]} 待优化...
-    private _childNameIndex: Record<string, number[]>;
+    private _childNameIndexer: Record<string, number[]>;
     private _childAttrIndex: Record<string, Record<string, number[]>>;
 
     constructor(index?: number, parentNode?: Node, name?: string, attr?: Object) {
@@ -24,7 +24,7 @@ export class Node {
         this.isDoubleTag = true;
         this.childNodes = [];
         this.text = '';
-        this._childNameIndex = {};
+        this._childNameIndexer = {};
         this._childAttrIndex = {};
     }
 
@@ -109,10 +109,10 @@ export class Node {
     appendChildIndex(node: Node, index: number): void {
         // name index
         const name: string = node.getName();
-        if (name in this._childNameIndex) {
-            this._childNameIndex[name].push(index);
+        if (name in this._childNameIndexer) {
+            this._childNameIndexer[name].push(index);
         } else {
-            this._childNameIndex[name] = [index];
+            this._childNameIndexer[name] = [index];
         }
 
         // attr index
@@ -137,8 +137,8 @@ export class Node {
         }
     }
     protected getChildNodesIndexByName(name: string): number[] {
-        if (name in this._childNameIndex) 
-            return this._childNameIndex[name];
+        if (name in this._childNameIndexer) 
+            return this._childNameIndexer[name];
         return [];
     }
     getChildNodesByName(name: string): Node[] {

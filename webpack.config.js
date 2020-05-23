@@ -17,5 +17,9 @@ module.exports = {
         path: path.join(__dirname, './built'),
         filename: 'bundle.js'
     },
-    // mode: 'production'
+    mode: 'development',
+    devtool: 'cheap-module-eval-source-map',
+
+    // mode: 'production',
+    // devtool: 'cheap-module-source-map',
 }
