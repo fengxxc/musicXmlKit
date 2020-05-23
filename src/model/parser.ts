@@ -59,8 +59,8 @@ export class Parser {
                     for (; i < chars.length && chars.charAt(i) != ' ' && chars.charAt(i) != '/' && chars.charAt(i) != '>'; i++)
                         curTag += chars.charAt(i);
 
-                    // over space
-                    for (; i < chars.length && chars.charAt(i) == ' '; i++) {}
+                    // over  space | tab | c return | linefeed
+                    for (; i < chars.length && /\s|\t|(\r\n)|\n/.test(chars.charAt(i)); i++) {}
 
                     // parse attrbute
                     curAttrs = parseAttrbutes(); // result json or null
@@ -84,8 +84,8 @@ export class Parser {
                     i++;
                     curTag = '', curAttrs = null;
                 }
-                // over space
-                for (; i < chars.length && chars.charAt(i) == ' '; i++) {}
+                // over  space | tab | c return | linefeed
+                for (; i < chars.length && /\s|\t|(\r\n)|\n/.test(chars.charAt(i)); i++) {}
                 continue;
             }
 
