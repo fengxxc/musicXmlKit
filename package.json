@@ -2,15 +2,18 @@
   "name": "musicxmlkit",
   "version": "1.0.0",
   "description": "",
-  "main": "./built/main.js",
+  "main": "./built/bundle.js",
   "directories": {
     "lib": "lib"
   },
-  "dependencies": {},
+  "dependencies": {
+    "zrender": "^4.3.1"
+  },
   "devDependencies": {
     "@types/jest": "^25.2.3",
     "@types/node": "^14.0.4",
     "awesome-typescript-loader": "^5.2.1",
+    "html-webpack-plugin": "^4.3.0",
     "jest": "^26.0.1",
     "ts-jest": "^26.1.0",
     "ts-node": "^8.4.1",
@@ -21,6 +24,7 @@
   },
   "scripts": {
     "build": "node ./node_modules/webpack/bin/webpack --config webpack.config.js",
+    "tbuild": "node ./node_modules/webpack/bin/webpack --config webpack.test.config.js",
     "test": "jest"
   },
   "repository": {
