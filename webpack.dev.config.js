@@ -1,5 +1,6 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const WebpackOnBuildPlugin = require('on-build-webpack')
 
 let tmpl = `
     <!DOCTYPE html>
@@ -14,6 +15,8 @@ let tmpl = `
     </body>
     </html>
 `
+
+const buildDir = './test/view/built'
 
 module.exports = {
     entry: {
@@ -31,7 +34,7 @@ module.exports = {
         extensions: ['.ts', '.js', '.json']
     },
     output: {
-        path: path.join(__dirname, './test/view/built'),
+        path: path.join(__dirname, buildDir),
         filename: '[name].bundle.test.js'
     },
     mode: 'development',
@@ -46,6 +49,21 @@ module.exports = {
             showErrors: true,
             inject: true,
             hash: true
+        }),
+        new WebpackOnBuildPlugin(function (stats) {
+            const newlyCreatedAssets = stats.compilation.assets;
+            const unlinked = [];
+            fs.readdir(path.resolve(buildDir), (err, files) => {
+                files.forEach(file => {
+                    if (!newlyCreatedAssets[file]) {
+                        fs.unlink(path.resolve(buildDir + file));
+                        unlinked.push(file);
+                    }
+                });
+                if (unlinked.length > 0) {
+                    console.log('删除文件: ', unlinked);
+                }
+            });
         })
     ]
 }

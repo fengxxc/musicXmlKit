@@ -15,6 +15,7 @@
     "awesome-typescript-loader": "^5.2.1",
     "html-webpack-plugin": "^4.3.0",
     "jest": "^26.0.1",
+    "on-build-webpack": "^0.1.0",
     "ts-jest": "^26.1.0",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.4",
@@ -24,7 +25,7 @@
   },
   "scripts": {
     "build": "node ./node_modules/webpack/bin/webpack --config webpack.config.js",
-    "tbuild": "node ./node_modules/webpack/bin/webpack --config webpack.test.config.js",
+    "dev": "node ./node_modules/webpack/bin/webpack --config webpack.dev.config.js --watch",
     "test": "jest"
   },
   "repository": {

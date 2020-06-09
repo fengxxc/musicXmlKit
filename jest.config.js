@@ -4,4 +4,5 @@ module.exports = {
     },
     testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$',
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+    modulePathIgnorePatterns: ['/view/'] // 不测试的目录
 }
