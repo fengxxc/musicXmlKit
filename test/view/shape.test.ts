@@ -65,6 +65,31 @@ function main() {
     shape.drawText(x, y + lineDstc * 2, '4', lineDstc * 2, 'Microsoft Yahei', '#000')
     shape.drawPoint(x, y + lineDstc * 0, 2, '#0f0', '#000')
     x += 60
+
+    shape.drawSharp(x, y + lineDstc * 2, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 2, 2, '#0f0', '#000')
+    x += 60
+
+    x = 40.5
+    y += 80.5
+    shape.drawLine(x, y, 1200, y, 1, '#000')
+    shape.drawLine(x, y + lineDstc, 1200, y + lineDstc, 1, '#000')
+    shape.drawLine(x, y + lineDstc*2, 1200, y + lineDstc*2, 1, '#000')
+    shape.drawLine(x, y + lineDstc*3, 1200, y + lineDstc*3, 1, '#000')
+    shape.drawLine(x, y + lineDstc*4, 1200, y + lineDstc*4, 1, '#000')
+    x += 20
+
+    shape.drawRestore(x, y + lineDstc * 2, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 2, 2, '#0f0', '#000')
+    x += 40
+
+    shape.drawFlat(x, y + lineDstc * 2, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 2, 2, '#0f0', '#000')
+    x += 40
+
+    shape.drawRest_4(x, y + lineDstc * 2, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 2, 2, '#0f0', '#000')
+    x += 40
 }
 
 main()

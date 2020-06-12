@@ -173,16 +173,111 @@ export class Shape {
         )
     }
 
+    /**
+     * 文本
+     * @static
+     * @param {number} x
+     * @param {number} y
+     * @param {string} text
+     * @param {string} font textFont: '18px Microsoft Yahei'
+     * @param {string} colorHex
+     * @returns {zrender}
+     * @memberof Shape
+     */
     static Text(x: number, y: number, text: string, font: string, colorHex: string): zrender {
         return new zrender.Text({
             style: {
                 x: x,
                 y: y,
                 text: text,
-                textFill: colorHex,
                 textFont: font,
+                textFill: colorHex,
             }
         })
+    }
+
+    /**
+     * 升调符号 ♯
+     * @static
+     * @param {number} x
+     * @param {number} y
+     * @param {number} [scale=1]
+     * @param {string} fillColorHex
+     * @returns {zrender}
+     * @memberof Shape
+     */
+    static Sharp(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
+        const _scale = scale;
+        return new zrender.path.createFromString(
+            'M' + (x + 0) + ',' + (y + 5) // 原点设在右中
+            + 'l0,5.6l-3.118,0.738c0,6.595,0,11.721,0,12.247c0,1.562,-2.297,1.422,-2.297,-0.08c0,-0.491,0,-5.324,0,-11.624l-5.17,1.223c0,6.397,0,11.326,0,11.841c0,1.562,-2.297,1.422,-2.297,-0.08c0,-0.48,0,-5.116,0,-11.218l-3.118,0.738l0,-5.6l3.118,-0.738c0,-3.272,0,-6.704,0,-10l-3.118,0.738l0,-5.6l3.118,-0.738c0,-6.621,0,-11.695,0,-11.982c0,-1.202,2.297,-1.282,2.297,-0.08c0,0.299,0,5.139,0,11.519l5.17,-1.223c0,-6.419,0,-11.295,0,-11.576c0,-1.202,2.297,-1.282,2.297,-0.08c0,0.292,0,4.935,0,11.113l3.118,-0.738l0,5.6l-3.118,0.738c0,3.267,0,6.697,0,10l3.118,-0.738zm-5.415,-8.719l-5.17,1.223c0,3.28,0,6.709,0,10l5.17,-1.223c0,-3.286,0,-6.716,0,-10z'
+            , {
+                origin: [x, y],
+                scale: [_scale, _scale],
+                style: {
+                    fill: fillColorHex
+                }
+            }
+        )
+    }
+
+    /**
+     * 还原调符号
+     * @static
+     * @param {number} x
+     * @param {number} y
+     * @param {number} [scale=1]
+     * @param {string} fillColorHex
+     * @returns {zrender}
+     * @memberof Shape
+     */
+    static Restore(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
+        const _scale = scale;
+        return new zrender.path.createFromString(
+            // svg起始点在右下 M11.862,47.499'
+            'M' + (x + 0) + ',' + (y + 24) // 原点设在右中
+            + 'c0,-2.55,0,-8.322,0,-14.266c-1.71,0.611,-3.922,1.898,-10.887,4.665c-0.584,0.232,-0.975,0.069,-0.975,-0.403c0,-1.222,0,-36.274,0,-36.994c0,-0.72,1.138,-0.645,1.138,0c0,2.55,0,8.322,0,14.266c1.71,-0.611,3.922,-1.898,10.887,-4.665c0.584,-0.232,0.975,-0.069,0.975,0.403c0,1.222,0,36.274,0,36.994c0,0.72,-1.138,0.645,-1.138,0zm-10.724,-27.699c0,6.782,0,12.617,0,12.617l10.724,-4.217c0,-6.782,0,-12.617,0,-12.617l-10.724,4.217z'
+            , {
+                origin: [x, y],
+                scale: [_scale, _scale],
+                style: {
+                    fill: fillColorHex
+                }
+            }
+        )
+    }
+
+
+    /**
+     * 降调符号♭
+     * @static
+     * @param {number} x
+     * @param {number} y
+     * @param {number} [scale=1]
+     * @param {string} fillColorHex
+     * @returns {zrender}
+     * @memberof Shape
+     */
+    static Flat(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
+        const _scale = scale;
+        return new zrender.path.createFromString(
+            // M11.763,40.8
+            'M' + (x - 6) + ',' + (y + 17) // 原点设在右中
+            + 'c-2.62,2.301,-5.331,5.038,-10.133,6.939c-0.52,0.381,-1.63,0.097,-1.63,-0.619c0,-0.935,0,-45.482,0,-46.32c0,-0.838,1.895,-0.855,1.895,0.08c0,0.47,0,11.899,0,23.288c7.549,-5.772,13.18,-3.768,15.158,0.872c1.589,3.728,1.884,9.46,-5.29,15.76zm-0.868,-12.96c-1.689,-2.072,-5.614,-3.252,-9,-0.741c0,7.827,0,15.16,0,18.384c10.709,-10.906,10.931,-15.273,9,-17.643z'
+            , {
+                origin: [x, y],
+                scale: [_scale, _scale],
+            }
+        )
+    }
+
+    static Rest_4(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
+        const _scale = scale;
+        return new zrender.path.createFromString(
+            // M4.141,0.72
+            'M' + (x + 4) + ',' + (y - 24) // 原点设在左中
+            + 'c0.852,0.631,5.938,5.065,5.846,8.24c-0.092,3.175,-6.475,11.692,-7.308,12.64c-0.832,0.948,-1.504,2.087,-0.081,3.52c1.423,1.433,4.702,4.342,5.197,5.04c-2.859,-0.263,-4.992,-0.62,-6.739,2.08c-1.478,2.283,-1.136,4.51,-0.163,6.32c0.974,1.81,5.811,7.997,6.577,9.12c0.446,0.654,2.086,0.226,1.38,-0.64c-1.021,-1.252,-6.201,-6.548,-2.679,-10.8c3.101,-3.744,6.468,-2.51,9.987,2.64c1.635,2.394,3.901,0.048,2.111,-1.6c-1.971,-1.814,-8.498,-7.952,-9.175,-8.72c-0.35,-0.398,-0.996,-0.979,-0.325,-1.92c0.956,-1.339,8.019,-10.837,8.607,-11.92c0.588,-1.083,0.693,-1.854,-0.244,-2.88c-0.936,-1.026,-11.428,-11.161,-12.179,-11.68c-0.496,-0.343,-1.183,0.285,-0.812,0.56z'
+        )
     }
 
     draw(shape: zrender) {
@@ -223,5 +318,21 @@ export class Shape {
 
     drawText(x: number, y: number, text: string, s: number, fontFamily: string, colorHex: string): void {
         this.draw(Shape.Text(x, y, text, s * 1.2 + 'px ' + fontFamily, colorHex));
+    }
+
+    drawSharp(x: number, y: number, s: number, fillColorHex: string): void {
+        this.draw(Shape.Sharp(x, y, s / 20, fillColorHex))
+    }
+
+    drawRestore(x: number, y: number, s: number, fillColorHex: string): void {
+        this.draw(Shape.Restore(x, y, s / 20, fillColorHex))
+    }
+
+    drawFlat(x: number, y: number, s: number, fillColorHex: string): void {
+        this.draw(Shape.Flat(x, y, s / 20, fillColorHex))
+    }
+
+    drawRest_4(x: number, y: number, s: number, fillColorHex: string): void {
+        this.draw(Shape.Rest_4(x, y, s / 20, fillColorHex))
     }
 }
