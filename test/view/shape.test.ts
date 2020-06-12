@@ -3,13 +3,15 @@ import { Shape } from "../../src/view/shape";
 function main() {
     const ctx: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('can')
     const shape = new Shape(ctx)
-    shape.drawPoint(10, 10, 3, '#333', '#888')
-    shape.drawLine(10, 10, 30, 30, 1, '#255')
+    let x = 10.5
+    let y = 10.5
+    shape.drawPoint(x, y, 2, '#333', '#888')
+    shape.drawLine(x, y, 30, 30, 1, '#255')
     shape.drawImage('../t1.jpg', 80, 220, null, null)
 
-    const lineDstc = 20
-    let x = 40.5
-    let y = 80.5
+    const lineDstc = 15
+    x = 40.5
+    y = 80.5
     shape.drawLine(x, y, 1200, y, 1, '#000')
     shape.drawLine(x, y + lineDstc, 1200, y + lineDstc, 1, '#000')
     shape.drawLine(x, y + lineDstc*2, 1200, y + lineDstc*2, 1, '#000')
@@ -27,32 +29,41 @@ function main() {
     x += 60
     shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, '#fff', '#000', 2)
     x += 60
-    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, 'transparency', '#00f', 12)
+    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, 'transparency', '#00f', 2)
     x += 60
 
-    shape.drawClefG(x, y+lineDstc*3, 1)
+    shape.drawClefG(x, y + lineDstc * 3, lineDstc)
     shape.drawPoint(x, y+lineDstc*3, 2, '#0f0', '#000');
     x += 60
-    shape.drawClefG(x, y+lineDstc*3, .5)
+    shape.drawClefG(x, y + lineDstc * 3, lineDstc/2)
     shape.drawPoint(x, y+lineDstc*3, 2, '#0f0', '#000');
     x += 60
 
-    shape.drawClefF(x, y+lineDstc*1, 1)
+    shape.drawClefF(x, y + lineDstc * 1, lineDstc)
     shape.drawPoint(x, y+lineDstc*1, 2, '#0f0', '#000');
     x += 60
-    shape.drawClefF(x, y+lineDstc*1, .5)
+    shape.drawClefF(x, y + lineDstc * 1, lineDstc / 2)
     shape.drawPoint(x, y+lineDstc*1, 2, '#0f0', '#000');
     x += 60
 
-    shape.drawClefC(x, y+lineDstc*2, 1)
-    shape.drawPoint(x, y+lineDstc*2, 2, '#0f0', '#000');
+    shape.drawClefC(x, y + lineDstc * 2, lineDstc)
+    shape.drawPoint(x, y+lineDstc*2, 2, '#0f0', '#000')
     x += 60
-    shape.drawClefC(x, y+lineDstc*2, .5)
-    shape.drawPoint(x, y+lineDstc*2, 2, '#0f0', '#000');
+    shape.drawClefC(x, y + lineDstc * 2, lineDstc / 2)
+    shape.drawPoint(x, y+lineDstc*2, 2, '#0f0', '#000')
     x += 60
 
-    shape.drawClefC(x, y + lineDstc * 3, 1)
-    shape.drawPoint(x, y + lineDstc * 3, 2, '#0f0', '#000');
+    shape.drawClefC(x, y + lineDstc * 3, lineDstc)
+    shape.drawPoint(x, y + lineDstc * 3, 2, '#0f0', '#000')
+    x += 60
+
+    shape.drawNoteTail(x, y + lineDstc * 1, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 1, 2, '#0f0', '#000')
+    x += 60
+
+    shape.drawText(x, y + lineDstc * 0, '4', lineDstc * 2, 'Microsoft Yahei', '#000')
+    shape.drawText(x, y + lineDstc * 2, '4', lineDstc * 2, 'Microsoft Yahei', '#000')
+    shape.drawPoint(x, y + lineDstc * 0, 2, '#0f0', '#000')
     x += 60
 }
 
