@@ -3,13 +3,13 @@ import { Shape } from "../../src/view/shape";
 function main() {
     const ctx: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('can')
     const shape = new Shape(ctx)
+    const lineDstc = 10
     let x = 10.5
     let y = 10.5
     shape.drawPoint(x, y, 2, '#333', '#888')
     shape.drawLine(x, y, 30, 30, 1, '#255')
-    shape.drawImage('../t1.jpg', 80, 220, null, null)
+    shape.drawImage('../t1.jpg', 80, y + lineDstc * 18, null, null)
 
-    const lineDstc = 15
     x = 40.5
     y = 80.5
     shape.drawLine(x, y, 1200, y, 1, '#000')
@@ -70,8 +70,8 @@ function main() {
     shape.drawPoint(x, y + lineDstc * 2, 2, '#0f0', '#000')
     x += 60
 
-    x = 40.5
-    y += 80.5
+    x = 40
+    y += lineDstc * 6
     shape.drawLine(x, y, 1200, y, 1, '#000')
     shape.drawLine(x, y + lineDstc, 1200, y + lineDstc, 1, '#000')
     shape.drawLine(x, y + lineDstc*2, 1200, y + lineDstc*2, 1, '#000')
@@ -89,6 +89,22 @@ function main() {
 
     shape.drawRest_4(x, y + lineDstc * 2, lineDstc, '#000')
     shape.drawPoint(x, y + lineDstc * 2, 2, '#0f0', '#000')
+    x += 40
+
+    shape.drawRest_8(x, y + lineDstc * 1.5, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 1.5, 2, '#0f0', '#000')
+    x += 40
+
+    shape.drawRest_16(x, y + lineDstc * 1.5, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 1.5, 2, '#0f0', '#000')
+    x += 40
+
+    shape.drawRest_32(x, y + lineDstc * 1.5, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 1.5, 2, '#0f0', '#000')
+    x += 40
+
+    shape.drawRest_64(x, y + lineDstc * 1.5, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 1.5, 2, '#0f0', '#000')
     x += 40
 }
 
