@@ -274,6 +274,13 @@ export class Shape {
         )
     }
 
+    /**
+     * 4分休止符
+     * @param x 
+     * @param y 
+     * @param scale 
+     * @param fillColorHex 
+     */
     static Rest_4(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
         const _scale = scale;
         return new zrender.path.createFromString(
@@ -290,6 +297,13 @@ export class Shape {
         )
     }
 
+    /**
+     * 8分休止符
+     * @param x 
+     * @param y 
+     * @param scale 
+     * @param fillColorHex 
+     */
     static Rest_8(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
         const _scale = scale;
         return new zrender.path.createFromString(
@@ -306,6 +320,13 @@ export class Shape {
         )
     }
 
+    /**
+     * 16分休止符
+     * @param x 
+     * @param y 
+     * @param scale 
+     * @param fillColorHex 
+     */
     static Rest_16(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
         const _scale = scale;
         return new zrender.path.createFromString(
@@ -322,6 +343,13 @@ export class Shape {
         )
     }
 
+    /**
+     * 32分休止符
+     * @param x 
+     * @param y 
+     * @param scale 
+     * @param fillColorHex 
+     */
     static Rest_32(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
         const _scale = scale;
         return new zrender.path.createFromString(
@@ -338,6 +366,13 @@ export class Shape {
         )
     }
 
+    /**
+     * 64分休止符
+     * @param x 
+     * @param y 
+     * @param scale 
+     * @param fillColorHex 
+     */
     static Rest_64(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
         const _scale = scale;
         return new zrender.path.createFromString(
