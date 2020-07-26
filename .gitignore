@@ -1,4 +1,5 @@
-.vscode/*
+# .vscode/*
 *.xmind
 node_modules/**
 built/**
+test/view/built/**

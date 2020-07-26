@@ -1,11 +1,11 @@
-import { Node } from "../model/node";
-import { RootNode } from "../model/rootNode";
-import { SorePartWiseNode } from "../model/sorePartWiseNode";
-import { MeasureNode } from "../model/measureNode";
-import { AttributesNode } from "../model/attributesNode";
-import { Clef } from "../model/interface/attributes";
+import { Node } from "../../model/Node";
+import { RootNode } from "../../model/rootNode";
+import { SorePartWiseNode } from "../../model/sorePartWiseNode";
+import { MeasureNode } from "../../model/measureNode";
+import { AttributesNode } from "../../model/attributesNode";
+import { Clef } from "../../model/interface/attributes";
 import { Quill } from "./painter";
-import { Config } from "../config";
+import { Config } from "../../config";
 import { Constant } from "./constant";
 
 export class Render {
