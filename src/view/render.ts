@@ -8,8 +8,8 @@ export class Render {
         marginRight: 10,
         marginBottom: 20,
         marginLeft: 10,
-        pageWidth: 960,
-        pageHeight: 600,
+        pageWidth: 1000,
+        pageHeight: 800,
         lineDstc: 10,
         lineWidth: 1,
         lineColor: '#000',
@@ -18,7 +18,7 @@ export class Render {
         const shape: Shape = new Shape(canvasDom);
         const iterator = MxIterator.getIterator(musicXmlNode);
         let entry = null;
-        let x: number = cfg.marginLeft, y: number = cfg.marginTop;
+        let x: number = cfg.marginLeft + 0.5, y: number = cfg.marginTop + 0.5;
         while (!(entry = iterator.next()).done) {
             const token = entry.value;
             for (let i = 0; i < 5; i++) {

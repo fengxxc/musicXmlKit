@@ -1,11 +1,13 @@
 import { Render } from "../../src/view/render"
-import { readFileSync } from "fs";
 import { Parser } from "../../src/model/parser";
 import { RootNode } from "../../src/model/rootNode";
+import { Utils } from "../../src/utils";
 
-test('render test', () => {
-    const xml: string = readFileSync('./test/view/notes1.xml', 'utf-8');
+function main() {
+    const xml: string = Utils.ajaxGetSync('/test/view/notes1.xml')
     const root: RootNode = Parser.parseMusicXml(xml);
     const ctx: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('can')
     Render.action(ctx, root, Render.ConfigDef)
-})
+    
+}
+main();

@@ -11,7 +11,7 @@ let tmpl = `
         <title>graph-test</title>
     </head>
     <body>
-        <canvas id="can" width="1000px" height="800px" styles="box-shadow: 0 0 5px;"></canvas>
+        <canvas id="can" width="1000px" height="800px" style="outline: black 1px solid;"></canvas>
     </body>
     </html>
 `
@@ -20,7 +20,8 @@ const buildDir = './test/view/built'
 
 module.exports = {
     entry: {
-        shape: './test/view/shape.test.ts'
+        shape: './test/view/shape.test.ts',
+        render: './test/view/render.test.ts'
     },
     devtool: 'inline-source-map',
     module: {
@@ -46,6 +47,15 @@ module.exports = {
             templateContent: ({htmlWebpackPlugin}) => tmpl,
             filename: './shape.test.html',
             chunks: ['shape'],
+            showErrors: true,
+            inject: true,
+            hash: true
+        }),
+        new HtmlWebpackPlugin({
+            // template: './test/view/graph.test.html',
+            templateContent: ({htmlWebpackPlugin}) => tmpl,
+            filename: './render.test.html',
+            chunks: ['render'],
             showErrors: true,
             inject: true,
             hash: true

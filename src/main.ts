@@ -1,15 +1,14 @@
 import { Parser } from "./model/parser";
 import { Node } from "./model/node";
-import { MxNodeRender } from "./mxNodeRender";
 import { SorePartWiseNode } from "./model/sorePartWiseNode";
 import { NoteNode } from "./model/noteNode";
 import { MeasureNode } from "./model/measureNode";
 import { DireMetronomeNode } from "./model/direMetronomeNode";
 import { AttributesNode, ClefNode } from "./model/attributesNode";
-import { Render } from "./view/render";
-import { Quill } from "./view/painter";
+import { Render } from "./view/old/render";
+import { Quill } from "./view/old/painter";
 import { Utils } from "./utils";
-import { Constant } from "./view/constant";
+import { Constant } from "./view/old/constant";
 import { Config } from "./config";
 
 
@@ -35,8 +34,6 @@ console.log(n1.NotationsDynamics());
 console.log(n1.NotationsTechFret());
 console.log(n1.NotationsTechString());
 
-
-MxNodeRender.render(root);
 
 console.log(root.getFullText());
 
