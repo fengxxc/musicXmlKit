@@ -6,6 +6,8 @@ export class Config {
     private paddingBottom: number;
     private paddingLeft: number;
     private lineSpace: number;
+    private lineWidth: number;
+    private lineColor: string;
     private clefSpace: number;
     private noteGroupSpace: number;
 
@@ -13,11 +15,13 @@ export class Config {
         
         this.pageWidth = canvas.clientWidth;
         this.pageHeight = canvas.clientHeight;
-        this.paddingTop = 10.5;
-        this.paddingRight = 10.5;
-        this.paddingBottom = 10.5;
-        this.paddingLeft = 10.5;
+        this.paddingTop = 20;
+        this.paddingRight = 10;
+        this.paddingBottom = 20;
+        this.paddingLeft = 10;
         this.lineSpace = 10;
+        this.lineWidth = 1;
+        this.lineColor = "#000";
         this.clefSpace = 80;
         this.noteGroupSpace = 20;
     }
@@ -50,6 +54,14 @@ export class Config {
     
     public get LineSpace() : number {
         return this.lineSpace;
+    }
+
+    public get LineWidth() : number {
+        return this.lineWidth;
+    }
+
+    public get LineColor() : string {
+        return this.lineColor;
     }
     
     public get ClefSpace() : number {

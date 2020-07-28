@@ -7,7 +7,7 @@ function main() {
     const xml: string = Utils.ajaxGetSync('/test/view/notes1.xml')
     const root: RootNode = Parser.parseMusicXml(xml);
     const ctx: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('can')
-    Render.action(ctx, root, Render.ConfigDef)
+    Render.action(ctx, root);
     
 }
 main();
