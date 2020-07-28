@@ -26,6 +26,7 @@
   "scripts": {
     "build": "node ./node_modules/webpack/bin/webpack --config webpack.config.js",
     "dev": "node ./node_modules/webpack/bin/webpack --config webpack.dev.config.js --watch",
+    "server": "node ./service.js",
     "test": "node ./node_modules/jest/bin/jest.js",
     "test:debug": "node --inspect ./node_modules/jest/bin/jest.js --runInBand"
     

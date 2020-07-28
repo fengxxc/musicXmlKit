@@ -7,6 +7,7 @@ module.exports = {
     modulePathIgnorePatterns: [
          // 不测试的目录
         '/view/shape.test.ts',
+        '/view/render.test.ts',
         '/view/built/',
 
     ]

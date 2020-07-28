@@ -43,7 +43,6 @@ module.exports = {
 
     plugins: [
         new HtmlWebpackPlugin({
-            // template: './test/view/graph.test.html',
             templateContent: ({htmlWebpackPlugin}) => tmpl,
             filename: './shape.test.html',
             chunks: ['shape'],
@@ -52,7 +51,6 @@ module.exports = {
             hash: true
         }),
         new HtmlWebpackPlugin({
-            // template: './test/view/graph.test.html',
             templateContent: ({htmlWebpackPlugin}) => tmpl,
             filename: './render.test.html',
             chunks: ['render'],
