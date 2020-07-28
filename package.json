@@ -26,8 +26,8 @@
   "scripts": {
     "build": "node ./node_modules/webpack/bin/webpack --config webpack.config.js",
     "dev": "node ./node_modules/webpack/bin/webpack --config webpack.dev.config.js --watch",
-    "test": "jest",
-    "debug": "node --inspect ./node_modules/jest/bin/jest.js --runInBand"
+    "test": "node ./node_modules/jest/bin/jest.js",
+    "test:debug": "node --inspect ./node_modules/jest/bin/jest.js --runInBand"
     
   },
   "repository": {
@@ -38,7 +38,7 @@
     "musicxml"
   ],
   "author": "fengxxc",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxxc/musicXmlKit/issues"
   },
