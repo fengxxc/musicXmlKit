@@ -1,3 +1,5 @@
+import { RootNode } from "./model/rootNode";
+
 export class Config {
     private pageWidth: number;
     private pageHeight: number;
@@ -8,10 +10,13 @@ export class Config {
     private lineSpace: number;
     private lineWidth: number;
     private lineColor: string;
-    private clefSpace: number;
-    private noteGroupSpace: number;
+    private clefLeftPadding: number;
+    private noteGroupLeftPadding: number;
+    private staveSpace: number; // 线谱与线谱之间的距离
+    private stave5Height: number; // 五线谱高度
+    private rowSpace: number; // 行间距，行包括多个线谱
 
-    constructor(canvas: HTMLElement) {
+    constructor(canvas: HTMLElement, musicXmlNode: RootNode) {
         
         this.pageWidth = canvas.clientWidth;
         this.pageHeight = canvas.clientHeight;
@@ -22,15 +27,17 @@ export class Config {
         this.lineSpace = 10;
         this.lineWidth = 1;
         this.lineColor = "#000";
-        this.clefSpace = 80;
-        this.noteGroupSpace = 20;
+        this.clefLeftPadding = 15;
+        this.noteGroupLeftPadding = 15;
+        this.staveSpace = 40;
+        this.stave5Height = this.lineSpace * 4;
+        this.rowSpace = 60;
     }
 
     
     public get PageWidth() : number {
         return this.pageWidth;
     }
-    
     
     public get PageHeight() : number {
         return this.pageHeight;
@@ -64,12 +71,40 @@ export class Config {
         return this.lineColor;
     }
     
-    public get ClefSpace() : number {
-        return this.clefSpace;
+    public get ClefLeftPadding() : number {
+        return this.clefLeftPadding;
     }
     
-    public get NoteGroupSpace() : number {
-        return this.noteGroupSpace;
+    /**
+     * 音符组左间距
+     *
+     * @readonly
+     * @type {number}
+     * @memberof Config
+     */
+    public get NoteGroupLeftPadding() : number {
+        return this.noteGroupLeftPadding;
+    }
+    
+    public get ContentWidth() : number {
+        return this.pageWidth - this.paddingLeft - this.paddingRight;
+    }
+
+    public get ContentHeight() : number {
+        return this.pageHeight - this.paddingTop - this.paddingBottom;
+    }
+
+    public get StaveSpace() : number {
+        return this.staveSpace;
+    }
+    
+    
+    public get Stave5Height() : number {
+        return this.stave5Height;
+    }
+    
+    public get RowSpave() : number {
+        return this.rowSpace;
     }
     
 }

@@ -1,5 +1,6 @@
 // import { zrender } from "zrender/dist/zrender";
 import * as zrender from "zrender";
+import RectBound from "./rectBound";
 // import { zrender } from "../../node_modules/zrender/zrender.all";
 
 export class Shape {
@@ -36,7 +37,8 @@ export class Shape {
             style: {
                 stroke: colorHex,
                 lineWidth: lineWidth
-            }
+            },
+            cursor: 'auto'
         })
     }
 
@@ -117,7 +119,7 @@ export class Shape {
      * @memberof Shape
      */
     static ClefG(x: number, y: number, scale: number = 1): zrender {
-        const _scale = scale
+        const _scale = scale;
         return new zrender.path.createFromString(
             // 'M' + x + ',' + (y - 90) 
             'M' + (x + 30) + ',' + (y - 90) 
@@ -389,75 +391,102 @@ export class Shape {
         )
     }
 
-    draw(shape: zrender) {
+    draw(shape: zrender): RectBound {
         this.zr.add(shape);
+        // debugger
+        const br = shape.getBoundingRect()
+        // test
+/*         this.zr.add(
+            new zrender.Rect({
+                shape: {
+                    x: br.x,
+                    y: br.y,
+                    width: br.width * shape.scale[0],
+                    height: br.height * shape.scale[1],
+                },
+                style: {
+                    fill: 'rgba(135, 206, 250, 0.8)',
+                    stroke: 'rgba(135, 206, 250, 0.8)'
+                }
+            })
+        )
+        console.log(br.width, br.height); */
+        return new RectBound(br.width * shape.scale[0], br.height * shape.scale[1]);
     }
 
-    drawPoint(x: number, y: number, r: number, fillColorHex: string, strokeColorHex: string): void {
-        this.draw(Shape.Circle(x, y, r, fillColorHex, strokeColorHex));
+    drawPoint(x: number, y: number, r: number, fillColorHex: string, strokeColorHex: string): RectBound {
+        return this.draw(Shape.Circle(x, y, r, fillColorHex, strokeColorHex));
     }
 
-    drawLine(x1: number, y1: number, x2: number, y2: number, lineWidth: number, colorHex: string): void {
-        this.draw(Shape.Line(x1, y1, x2, y2, lineWidth, colorHex));
+    drawLine(x1: number, y1: number, x2: number, y2: number, lineWidth: number, colorHex: string): RectBound {
+        return this.draw(Shape.Line(x1, y1, x2, y2, lineWidth, colorHex));
     }
 
-    drawImage(dataURI: string | HTMLImageElement | HTMLCanvasElement, x: number, y: number, width: number, height: number): void {
-        this.draw(Shape.Image(dataURI, x, y, width, height));
+    drawMultiHorizontalLine(x: number, y: number, length: number, lineWidth: number, colorHex: string, count: number, lineSpace: number): RectBound[] {
+        let arr: RectBound[] = [];
+        for (let i = 0; i < count; i++) {
+            arr.push(this.drawLine(x, y + i * lineSpace, x + length, y + i * lineSpace, lineWidth, colorHex));
+        }
+        return arr;
     }
 
-    drawNoteHead(x: number, y: number, h: number, a: number, t: number, fillColorHex: string, strokeColorHex: string, lineWidth: number): void {
-        this.draw(Shape.NoteHead(x, y, h, a, t, fillColorHex, strokeColorHex, lineWidth));
+    drawImage(dataURI: string | HTMLImageElement | HTMLCanvasElement, x: number, y: number, width: number, height: number): RectBound {
+        return this.draw(Shape.Image(dataURI, x, y, width, height));
     }
 
-    drawNoteTail(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.NoteTail(x, y, s / 20, fillColorHex));
+    drawNoteHead(x: number, y: number, h: number, a: number, t: number, fillColorHex: string, strokeColorHex: string, lineWidth: number): RectBound {
+        return this.draw(Shape.NoteHead(x, y, h, a, t, fillColorHex, strokeColorHex, lineWidth));
     }
 
-    drawClefG(x:number, y:number, s:number): void {
-        this.draw(Shape.ClefG(x, y, s / 20));
+    drawNoteTail(x: number, y: number, s: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.NoteTail(x, y, s / 20, fillColorHex));
     }
 
-    drawClefF(x: number, y: number, s: number): void {
-        this.draw(Shape.ClefF(x, y, s / 20));
+    drawClefG(x: number, y: number, lineSpace: number): RectBound {
+        return this.draw(Shape.ClefG(x, y, lineSpace / 20));
     }
 
-    drawClefC(x: number, y: number, s: number): void {
-        this.draw(Shape.ClefC(x, y, s / 20));
+    drawClefF(x: number, y: number, lineSpace: number): RectBound {
+        return this.draw(Shape.ClefF(x, y, lineSpace / 20));
     }
 
-    drawText(x: number, y: number, text: string, s: number, fontFamily: string, colorHex: string): void {
-        this.draw(Shape.Text(x, y, text, s * 1.2 + 'px ' + fontFamily, colorHex));
+    drawClefC(x: number, y: number, lineSpace: number): RectBound {
+        return this.draw(Shape.ClefC(x, y, lineSpace / 20));
     }
 
-    drawSharp(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.Sharp(x, y, s / 20, fillColorHex))
+    drawText(x: number, y: number, text: string, s: number, fontFamily: string, colorHex: string): RectBound {
+        return this.draw(Shape.Text(x, y, text, s * 1.2 + 'px ' + fontFamily, colorHex));
     }
 
-    drawRestore(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.Restore(x, y, s / 20, fillColorHex))
+    drawSharp(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Sharp(x, y, lineSpace / 20, fillColorHex))
     }
 
-    drawFlat(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.Flat(x, y, s / 20, fillColorHex))
+    drawRestore(x: number, y: number, s: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Restore(x, y, s / 20, fillColorHex))
     }
 
-    drawRest_4(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.Rest_4(x, y, s / 20, fillColorHex))
+    drawFlat(x: number, y: number, s: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Flat(x, y, s / 20, fillColorHex))
     }
 
-    drawRest_8(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.Rest_8(x, y, s / 20, fillColorHex))
+    drawRest_4(x: number, y: number, s: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_4(x, y, s / 20, fillColorHex))
     }
 
-    drawRest_16(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.Rest_16(x, y, s / 20, fillColorHex))
+    drawRest_8(x: number, y: number, s: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_8(x, y, s / 20, fillColorHex))
     }
 
-    drawRest_32(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.Rest_32(x, y, s / 20, fillColorHex))
+    drawRest_16(x: number, y: number, s: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_16(x, y, s / 20, fillColorHex))
     }
 
-    drawRest_64(x: number, y: number, s: number, fillColorHex: string): void {
-        this.draw(Shape.Rest_64(x, y, s / 20, fillColorHex))
+    drawRest_32(x: number, y: number, s: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_32(x, y, s / 20, fillColorHex))
+    }
+
+    drawRest_64(x: number, y: number, s: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_64(x, y, s / 20, fillColorHex))
     }
 }

@@ -4,7 +4,8 @@ import { RootNode } from "../../src/model/rootNode";
 import { Utils } from "../../src/utils";
 
 function main() {
-    const xml: string = Utils.ajaxGetSync('/test/view/notes1.xml')
+    const xml: string = Utils.ajaxGetSync('/test/view/notes2.xml')
+    document.getElementById('can').insertAdjacentHTML('afterend', `<div style="display: inline-block; vertical-align: top; height: 800px; overflow: scroll;" > <xmp id="xml" style = "width: 850px;" >${xml}</xmp></div >`);
     const root: RootNode = Parser.parseMusicXml(xml);
     const ctx: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('can')
     Render.action(ctx, root);

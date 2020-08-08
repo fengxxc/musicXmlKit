@@ -172,7 +172,7 @@ export class Render {
     }
 
     step(): void {
-        this.posX += this.config.NoteGroupSpace;
+        this.posX += this.config.NoteGroupLeftPadding;
         // 如果水平超出
         if (this.posX > this.config.PageWidth - 2 * this.config.PaddingRight) {
             // 就换行
