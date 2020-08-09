@@ -8,7 +8,7 @@ let tmpl = `
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>graph-test</title>
+        <title>musicXml-test</title>
     </head>
     <body>
         <canvas id="can" width="1000px" height="800px" style="outline: black 1px solid;"></canvas>
