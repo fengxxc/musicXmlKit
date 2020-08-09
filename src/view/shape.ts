@@ -276,6 +276,21 @@ export class Shape {
         )
     }
 
+    static Rect(x: number, y: number, width: number, height: number, scale: number = 1, fillColorHex: string): zrender {
+        const _scale = scale;
+        return new zrender.Rect({
+            shape: {
+                x: x,
+                y: y,
+                width: width,
+                height: height,
+            }, style: {
+                fill: fillColorHex,
+                stroke: fillColorHex
+            }
+        })
+    }
+
     /**
      * 4分休止符
      * @param x 
@@ -396,7 +411,7 @@ export class Shape {
         // debugger
         const br = shape.getBoundingRect()
         // test
-/*         this.zr.add(
+        /* this.zr.add(
             new zrender.Rect({
                 shape: {
                     x: br.x,
@@ -428,6 +443,10 @@ export class Shape {
             arr.push(this.drawLine(x, y + i * lineSpace, x + length, y + i * lineSpace, lineWidth, colorHex));
         }
         return arr;
+    }
+
+    drawVerticalLine(x: number, y: number, length: number, lineWidth: number, colorHex: string): RectBound {
+        return this.drawLine(x, y, x, y + length, lineWidth, colorHex);
     }
 
     drawImage(dataURI: string | HTMLImageElement | HTMLCanvasElement, x: number, y: number, width: number, height: number): RectBound {
@@ -470,23 +489,27 @@ export class Shape {
         return this.draw(Shape.Flat(x, y, s / 20, fillColorHex))
     }
 
-    drawRest_4(x: number, y: number, s: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_4(x, y, s / 20, fillColorHex))
+    drawRest_2(x: number, y: number, lineSpace: number, fillColorHex: string) {
+        return this.draw(Shape.Rect(x, y, lineSpace * 1.5, lineSpace / 2, lineSpace / 20, fillColorHex))
     }
 
-    drawRest_8(x: number, y: number, s: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_8(x, y, s / 20, fillColorHex))
+    drawRest_4(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_4(x, y, lineSpace / 20, fillColorHex))
     }
 
-    drawRest_16(x: number, y: number, s: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_16(x, y, s / 20, fillColorHex))
+    drawRest_8(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_8(x, y, lineSpace / 20, fillColorHex))
     }
 
-    drawRest_32(x: number, y: number, s: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_32(x, y, s / 20, fillColorHex))
+    drawRest_16(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_16(x, y, lineSpace / 20, fillColorHex))
     }
 
-    drawRest_64(x: number, y: number, s: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_64(x, y, s / 20, fillColorHex))
+    drawRest_32(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_32(x, y, lineSpace / 20, fillColorHex))
+    }
+
+    drawRest_64(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Rest_64(x, y, lineSpace / 20, fillColorHex))
     }
 }

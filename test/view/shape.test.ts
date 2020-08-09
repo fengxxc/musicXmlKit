@@ -106,6 +106,15 @@ function main() {
     shape.drawRest_64(x, y + lineDstc * 1.5, lineDstc, '#000')
     shape.drawPoint(x, y + lineDstc * 1.5, 2, '#0f0', '#000')
     x += 40
+
+    shape.drawRest_2(x, y + lineDstc * 1.5, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 1.5, 2, '#0f0', '#000')
+    x += 40
+
+    // 全休符
+    shape.drawRest_2(x, y + lineDstc * 1, lineDstc, '#000')
+    shape.drawPoint(x, y + lineDstc * 1, 2, '#0f0', '#000')
+    x += 40
 }
 
 main()
