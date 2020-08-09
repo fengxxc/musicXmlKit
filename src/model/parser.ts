@@ -5,6 +5,7 @@ import { MeasureNode } from "./measureNode";
 import { NoteNode } from "./noteNode";
 import { DireMetronomeNode } from "./direMetronomeNode";
 import { AttributesNode, ClefNode } from "./attributesNode";
+import { BackupNode } from "./backupNode";
 
 export class Parser {
     static parseXml(
@@ -114,6 +115,9 @@ export class Parser {
                     break;
                 case 'note':
                     res = new NoteNode(index, parent, tag, attrs);
+                    break;
+                case 'backup':
+                    res = new BackupNode(index, parent, tag, attrs);
                     break;
                 case 'metronome':
                     /* let direNode: Node = parent.getParentNode();

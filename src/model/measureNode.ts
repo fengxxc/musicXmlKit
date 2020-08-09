@@ -5,6 +5,7 @@ import { DireMetronomeNode } from "./direMetronomeNode";
 import { DireOctaveShiftNode } from "./direOctaveShiftNode";
 import { DireWedgeNode } from "./direWedgeNode";
 import { AttributesNode } from "./attributesNode";
+import { BackupNode } from "./backupNode";
 
 export class MeasureNode extends Node implements Measure {
     Number(): number {
@@ -17,7 +18,7 @@ export class MeasureNode extends Node implements Measure {
             return <AttributesNode>super.getChildNodesByName('attributes')[0];
         } catch (error) { return null; }
     }
-    displayEntities(): (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode)[] {
+    displayEntities(): (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode | BackupNode)[] {
         const exclude: Node = this.Attributes();
         return super.getChildNodes().filter(node => exclude != node);
     }

@@ -3,6 +3,7 @@ import { NoteNode } from "../model/noteNode";
 import { DireMetronomeNode } from "../model/direMetronomeNode";
 import { DireOctaveShiftNode } from "../model/direOctaveShiftNode";
 import { DireWedgeNode } from "../model/direWedgeNode";
+import { BackupNode } from "../model/backupNode";
 
 export default class MxToken {
     private measureNo: number;
@@ -12,8 +13,8 @@ export default class MxToken {
     private timeBeats: number;
     private clefs: ClefToken[];
     private spiritType: string;
-    private spirit: (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode);
-    constructor(measureNo: number, fifths: number, mode: string, timeBeatType: number, timeBeats: number, clefs: ClefToken[], spiritType: string, spirit: (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode)) {
+    private spirit: (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode | BackupNode);
+    constructor(measureNo: number, fifths: number, mode: string, timeBeatType: number, timeBeats: number, clefs: ClefToken[], spiritType: string, spirit: (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode | BackupNode)) {
         this.measureNo = measureNo;
         this.fifths = fifths;
         this.mode = mode;
@@ -30,7 +31,7 @@ export default class MxToken {
     get TimeBeats(): number { return this.timeBeats; }
     get Clefs(): ClefToken[] { return this.clefs; }
     get SpiritType(): string { return this.spiritType; }
-    get Spirit(): (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode) { return this.spirit; }
+    get Spirit(): (Node | NoteNode | DireMetronomeNode | DireOctaveShiftNode | DireWedgeNode | BackupNode) { return this.spirit; }
 }
 
 export class ClefToken {

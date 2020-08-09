@@ -4,6 +4,10 @@ import { Shape } from "./shape";
 import { Config } from "../config";
 import MxToken from "./mxToken";
 import RectBound from "./rectBound";
+import { Note } from "../model/interface/note";
+import { Backup } from "../model/interface/backup";
+import { Durational } from "../model/interface/durational";
+import { BackupNode } from "../model/backupNode";
 
 export class Render {
     
@@ -13,35 +17,70 @@ export class Render {
         const shape: Shape = new Shape(canvasDom);
         const iterator = MxIterator.getIterator(musicXmlNode);
         let entry = null;
-        let curMeasureStartX = 0; // 本小节起始x
+        
+        let lasttoken: MxToken = null;
         while (!(entry = iterator.next()).done) {
             const token: MxToken = entry.value;
-            console.log(token);
+            // console.log(token);
             
-            if (gu.isRowStart()) {
-                const measureHeight = (token.Clefs.length - 1) * (cfg.StaveSpace + cfg.Stave5Height) + cfg.Stave5Height;
-                gu.YStepLength= measureHeight;
-                // 五线谱左边起始竖线
-                shape.drawLine(gu.X, gu.Y, gu.X, gu.Y + measureHeight, cfg.LineWidth, cfg.LineColor);
+            const isRowStart:boolean = gu.isRowStart();
+            // 每行开始要做的事...
+            if (isRowStart) {
+                gu.CurMeasureHeight= (token.Clefs.length - 1) * (cfg.StaveSpace + cfg.Stave5Height) + cfg.Stave5Height;
+                // 一整行谱左边的起始竖线
+                shape.drawLine(gu.X, gu.Y(1), gu.X, gu.Y(1) + gu.CurMeasureHeight, cfg.LineWidth, cfg.LineColor);
+                let curMeasureStartX = 0; // 本小节起始x
                 token.Clefs.forEach(c => {
                     let _x = gu.X;
-                    const _y: number = gu.Y + (c.Number - 1) * (cfg.StaveSpace + cfg.Stave5Height);
+                    const _y: number = gu.Y(c.Number);
                     // 画五线谱 TODO 多声部
                     shape.drawMultiHorizontalLine(_x, _y, cfg.ContentWidth, cfg.LineWidth, cfg.LineColor, 5, cfg.LineSpace);
                     // 画谱号
-                    const cRb: RectBound = Render.renderClefSign(shape, c.Sign, _x += cfg.ClefLeftPadding, _y + cfg.Stave5Height - (c.Line - 1) * cfg.LineSpace, cfg.LineSpace);
+                    const cRb: RectBound = Render.renderClefSign(shape, c.Sign, _x += cfg.RowLeftPadding, _y + cfg.Stave5Height - (c.Line - 1) * cfg.LineSpace, cfg.LineSpace);
                     // gu.stepAhead(rb.Width);
                     // 画音调符号
-                    const kRb: RectBound = Render.renderKeySign(shape, _x += cRb.Width + cfg.NoteGroupLeftPadding, _y, token.Fifths, token.Mode, c.Sign, c.Line, cfg.LineSpace, cfg.LineColor);
+                    const kRb: RectBound = Render.renderKeySign(shape, _x += cRb.Width + cfg.MeasureLeftPadding, _y, token.Fifths, token.Mode, c.Sign, c.Line, cfg.LineSpace, cfg.LineColor);
                     // 画拍号
                     const tRb: RectBound = Render.renderTimeBeat(shape, _x += kRb.Width, _y, token.TimeBeatType, token.TimeBeats, cfg.LineSpace, cfg.LineColor);
                     if (c.Number == 1) {
                         curMeasureStartX = _x += tRb.Width;
                     }
                 })
-                break; // for test
+                gu.stepAhead(curMeasureStartX);
+                // break; // for test
+            }
+            
+            // 每小节开始要做的事...
+            if (lasttoken == null || token.MeasureNo != lasttoken.MeasureNo) {
+                if (!isRowStart) {
+                    token.Clefs.forEach(c => {
+                        // 画小节分割线
+                        shape.drawVerticalLine(gu.X, gu.Y(c.Number), cfg.Stave5Height, cfg.LineWidth, cfg.LineColor);
+                    })
+                }
+                // 画小节号
+                shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo+'', cfg.MeasureNoFontHeight, 'Microsoft Yahei', cfg.LineColor);
+                gu.stepAhead(cfg.MeasureLeftPadding);
             }
 
+            // 画主角，就是音符他们
+            if (token.SpiritType == 'note') {
+                const note: Note = <Note>token.Spirit;
+                
+                if (note.Rest()) {
+                    // 画休止符
+                    Render.renderRestSign(shape, gu.X, gu.Y(note.Staff()), note.Type(), cfg.LineSpace, cfg.LineColor);
+                } else {
+                    // TODO 画音符
+                    
+                }
+                gu.stepAhead(note.Duration() * cfg.SingleDurationWidth)
+            } else if (token.SpiritType == 'backup') {
+                const backup: Backup = <Backup>token.Spirit;
+                gu.stepAhead(-(backup.Duration() * cfg.SingleDurationWidth));
+            }
+
+            lasttoken = token;
             // TODO
         }
 
@@ -83,7 +122,7 @@ export class Render {
      * @param {number} clefLine
      * @param {number} lineSpace
      * @param {string} colorHex
-     * @returns {void}
+     * @returns {RectBound}
      * @memberof Render
      */
     static renderKeySign(shape: Shape, x: number, y: number, fifths: number, mode: string, clefSign: string, clefLine: number, lineSpace: number, colorHex: string): RectBound {
@@ -159,45 +198,68 @@ export class Render {
         shape.drawText(x, y + lineSpace * 2, timeBeatType+'', lineSpace * 2, 'Microsoft Yahei', colorHex);
         return new RectBound(rb.Width, lineSpace * 4);
     }
+
+    static renderRestSign(shape: Shape, x: number, y: number, restType: string, lineSpace: number, colorHex: string): RectBound {
+        switch (restType) {
+            case 'quarter': // 四分休止符
+                return shape.drawRest_4(x, y + lineSpace * 2, lineSpace, colorHex);
+            case 'eighth': // 八分休止符
+                return shape.drawRest_8(x, y + lineSpace * 2, lineSpace, colorHex);
+            case 'half': // 二分休止符
+                return shape.drawRest_2(x, y + lineSpace * 1.5, lineSpace, colorHex);
+            case 'whole': // 全休止符
+                return shape.drawRest_2(x, y + lineSpace * 1, lineSpace, colorHex);
+            case 'sixteenth': // 十六分休止符
+                return shape.drawRest_16(x, y + lineSpace * 2, lineSpace, colorHex);
+            default: // TODO 其他分休止符 32、64等
+                return null;
+        }
+    }
 }
 
 class Guide {
-    private x: number;
-    private y: number;
+    
+    private oX: number;
+    private oY: number;
     private cfg: Config;
-    private yStepLength: number;
+    private curMeasureHeight: number;
     constructor(cfg: Config) {
         this.cfg = cfg;
-        this.x = cfg.PaddingLeft + 0.5;
-        this.y = cfg.PaddingTop + 0.5;
+        this.oX = cfg.PaddingLeft + 0.5;
+        this.oY = cfg.PaddingTop + 0.5;
     }
     
     public get X() : number {
-        return this.x;
+        return this.oX;
     }
     
-    public get Y() : number {
-        return this.y;
+    public Y(staff: number) : number {
+        return this.oY + (staff - 1) * (this.cfg.StaveSpace + this.cfg.Stave5Height);
     }
     
     public isRowStart(): boolean {
-        return this.x === this.cfg.PaddingLeft + 0.5;
+        return this.oX === this.cfg.PaddingLeft + 0.5;
     }
 
     /**
      * 去下一个要绘制的图形原点
      */
     public stepAhead(xLength: number): void {
-        if (this.x + xLength >= this.cfg.PaddingLeft + this.cfg.ContentWidth) {
-            this.x = this.cfg.PaddingLeft + 0.5;
-            this.y += this.yStepLength + this.cfg.RowSpave;
+        if (this.oX + xLength >= this.cfg.PaddingLeft + this.cfg.ContentWidth) {
+            // 去下一行起始处
+            this.oX = this.cfg.PaddingLeft + 0.5;
+            this.oY += this.curMeasureHeight + this.cfg.RowSpave;
         } else {
-            this.x += xLength;
+            this.oX += xLength;
         }
     }
 
-    public set YStepLength(yLength : number) {
-        this.yStepLength = yLength;
+    public set CurMeasureHeight(height : number) {
+        this.curMeasureHeight = height;
     }
+
     
+    public get CurMeasureHeight() : number {
+        return this.curMeasureHeight;
+    }
 }

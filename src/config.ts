@@ -10,11 +10,13 @@ export class Config {
     private lineSpace: number;
     private lineWidth: number;
     private lineColor: string;
-    private clefLeftPadding: number;
-    private noteGroupLeftPadding: number;
+    private rowLeftPadding: number;
+    private measureLeftPadding: number;
     private staveSpace: number; // 线谱与线谱之间的距离
     private stave5Height: number; // 五线谱高度
     private rowSpace: number; // 行间距，行包括多个线谱
+    private measureNoFontHeight: number; // 小节号文字高度
+    private singleDurationWidth: number; // 一拍在线谱上的宽度
 
     constructor(canvas: HTMLElement, musicXmlNode: RootNode) {
         
@@ -27,11 +29,13 @@ export class Config {
         this.lineSpace = 10;
         this.lineWidth = 1;
         this.lineColor = "#000";
-        this.clefLeftPadding = 15;
-        this.noteGroupLeftPadding = 15;
+        this.rowLeftPadding = 15;
+        this.measureLeftPadding = 15;
         this.staveSpace = 40;
         this.stave5Height = this.lineSpace * 4;
         this.rowSpace = 60;
+        this.measureNoFontHeight = 10;
+        this.singleDurationWidth = 24;
     }
 
     
@@ -71,19 +75,19 @@ export class Config {
         return this.lineColor;
     }
     
-    public get ClefLeftPadding() : number {
-        return this.clefLeftPadding;
+    public get RowLeftPadding() : number {
+        return this.rowLeftPadding;
     }
     
     /**
-     * 音符组左间距
+     * 小节内左内边距
      *
      * @readonly
      * @type {number}
      * @memberof Config
      */
-    public get NoteGroupLeftPadding() : number {
-        return this.noteGroupLeftPadding;
+    public get MeasureLeftPadding() : number {
+        return this.measureLeftPadding;
     }
     
     public get ContentWidth() : number {
@@ -107,4 +111,12 @@ export class Config {
         return this.rowSpace;
     }
     
+    
+    public get MeasureNoFontHeight() : number {
+        return this.measureNoFontHeight;
+    }
+    
+    public get SingleDurationWidth() : number {
+        return this.singleDurationWidth;
+    }
 }
