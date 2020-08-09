@@ -250,7 +250,7 @@ class Guide {
             this.oX = this.cfg.PaddingLeft + 0.5;
             this.oY += this.curMeasureHeight + this.cfg.RowSpave;
         } else {
-            this.oX += xLength;
+            this.oX += Math.round(xLength);
         }
     }
 
