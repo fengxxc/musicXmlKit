@@ -14,10 +14,10 @@ export class MxIterator {
             for (const measure of part.getChildNodes()) {
                 const _measure: MeasureNode = <MeasureNode>measure;
                 const attributes: AttributesNode = _measure.Attributes();
-                attr['keyFifths'] = attributes.KeyFifths() ? attributes.KeyFifths() : attr['keyFifths'];
-                attr['keyMode'] = attributes.KeyMode() ? attributes.KeyMode() : attr['keyMode'];
-                attr['timeBeatType'] = attributes.TimeBeatType() ? attributes.TimeBeatType() : attr['timeBeatType'];
-                attr['timeBeats'] = attributes.TimeBeats() ? attributes.TimeBeats() : attr['timeBeats'];
+                attr['keyFifths'] = attributes.KeyFifths() != null ? attributes.KeyFifths() : attr['keyFifths'];
+                attr['keyMode'] = attributes.KeyMode() != null ? attributes.KeyMode() : attr['keyMode'];
+                attr['timeBeatType'] = attributes.TimeBeatType() != null? attributes.TimeBeatType() : attr['timeBeatType'];
+                attr['timeBeats'] = attributes.TimeBeats() != null ? attributes.TimeBeats() : attr['timeBeats'];
                 attr['clef'] = (attributes.Clef() != null && attributes.Clef().length > 0) ? 
                                     attributes.Clef().map(c => new ClefToken(c.Number(), c.Sign(), c.Line())) : attr['clef'];
                 for (const spirit of _measure.displayEntities()) {
