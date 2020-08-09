@@ -5,10 +5,7 @@ import { NoteNode } from "./model/noteNode";
 import { MeasureNode } from "./model/measureNode";
 import { DireMetronomeNode } from "./model/direMetronomeNode";
 import { AttributesNode, ClefNode } from "./model/attributesNode";
-import { Render } from "./view/old/render";
-import { Quill } from "./view/old/painter";
 import { Utils } from "./utils";
-import { Constant } from "./view/old/constant";
 import { Config } from "./config";
 
 
@@ -40,16 +37,6 @@ console.log(root.getFullText());
 console.log(root.toTreeString('   ', '\n'));
 // document.write(root.toTreeString('&emsp;&emsp;', '<br>'));
 
-Utils.loadImgs(Constant.ImgSrc, imgObj => {
-    const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
-    const quill: Quill = new Quill(canvas.getContext('2d'), imgObj);
-    const config = new Config(canvas);
-    const render: Render = new Render(root, quill, config);
-    render.main();
-
-    // quill.drawClef(50, 40, 'G');
-    // quill.drawPoint(50, 40, 2, 'red');
-    console.timeEnd('-------------执行时间------------');
-})
+console.timeEnd('-------------执行时间------------');
 
 // end
