@@ -1,6 +1,7 @@
 import { Node } from "../node";
+import { Durational } from "./durational";
 
-export interface Note {
+export interface Note extends Durational {
     chord(): boolean;
 
     /**
@@ -30,13 +31,6 @@ export interface Note {
      * @memberof Note
      */
     PitchAlter(): number; //
-
-    /**
-     * 时长
-     * @returns {number}
-     * @memberof Note
-     */
-    Duration(): number;
 
     /**
      * 延音线， 'start' | 'end'
