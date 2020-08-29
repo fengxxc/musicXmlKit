@@ -2,7 +2,10 @@ import { Node } from "../node";
 import { Durational } from "./durational";
 
 export interface Note extends Durational {
-    chord(): boolean;
+    /**
+     * 与上一个音构成和弦，单标签
+     */
+    Chord(): boolean;
 
     /**
      * 休止符，此为true的话，Pitch相关的就为空
@@ -49,7 +52,9 @@ export interface Note extends Durational {
     Voice(): number;
 
     /**
-     * 几分音符, 4分音符: 'quarter'; 8分音符: 'eighth'
+     * 几分音符
+     * 二全: 'breve'; 全: 'whole'; 2分: 'half'; 4分: 'quarter'; 8分: 'eighth'; 
+     * 16分: '16th'; 32分: '32th'; 64分: '64th'; 128分: '128th'; 
      * @returns {string}
      * @memberof Note
      */
@@ -63,6 +68,9 @@ export interface Note extends Durational {
      */
     Stem(): string;
 
+    /**
+     * 非椭圆形的音符头 'x' | ...
+     */
     Notehead(): string;
 
     /**

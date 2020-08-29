@@ -29,7 +29,7 @@ function main() {
     x += 60
     shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, '#fff', '#000', 2)
     x += 60
-    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, 'transparency', '#00f', 2)
+    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, 'transparent', '#00f', 2)
     x += 60
 
     shape.drawClefG(x, y + lineDstc * 3, lineDstc)

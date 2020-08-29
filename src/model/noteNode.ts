@@ -9,8 +9,8 @@ export class NoteNode extends Node implements Note {
         super(index, parentNode, name, attr);
     }
     // @overwrite
-    chord(): boolean {
-        return super.getChildNodesByName('chord').length == 0;
+    Chord(): boolean {
+        return super.getChildNodesByName('chord').length != 0;
     }
     // @overwrite
     Rest(): boolean {
