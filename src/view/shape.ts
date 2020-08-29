@@ -59,16 +59,17 @@ export class Shape {
      * @static
      * @param {number} x 坐标
      * @param {number} y 坐标
-     * @param {number} s 谱线间距
+     * @param {number} lineSpace 谱线间距
      * @param {number} angle 符头旋转角度
-     * @param {number} t 谱线宽度
+     * @param {number} lineWidth 谱线宽度（暂不用）
      * @param {string} fillColorHex 填充颜色 16进制
      * @param {string} strokeColorHex 描边颜色 16进制
+     * @param {number} strokeWidth 描边宽度
      * @returns {zrender}
      * @memberof Shape
      */
-    static NoteHead(x: number, y: number, s: number, angle: number, t: number, fillColorHex: string, strokeColorHex: string, lineWidth: number): zrender {
-        const h = (s - lineWidth) / 2;
+    static NoteHead(x: number, y: number, lineSpace: number, angle: number, lineWidth: number, fillColorHex: string, strokeColorHex: string, strokeWidth: number): zrender {
+        const h = (lineSpace - strokeWidth) / 2;
         const rad = angle / 180 * Math.PI; // 转成弧度
         const ra: number = h / (2 * Math.sin(rad));
         // const rb: number = (3 * Math.pow(h, 2) + 2 * h * t * Math.pow(Math.cos(rad), 2)) /
@@ -88,7 +89,7 @@ export class Shape {
             style: {
                 fill: fillColorHex,
                 stroke: strokeColorHex,
-                lineWidth: lineWidth
+                lineWidth: strokeWidth
             }
         });
     }
@@ -453,12 +454,12 @@ export class Shape {
         return this.draw(Shape.Image(dataURI, x, y, width, height));
     }
 
-    drawNoteHead(x: number, y: number, h: number, a: number, t: number, fillColorHex: string, strokeColorHex: string, lineWidth: number): RectBound {
-        return this.draw(Shape.NoteHead(x, y, h, a, t, fillColorHex, strokeColorHex, lineWidth));
+    drawNoteHead(x: number, y: number, lineSpace: number, angle: number, lineWidth: number, fillColorHex: string, strokeColorHex: string, strokeWidth: number): RectBound {
+        return this.draw(Shape.NoteHead(x, y, lineSpace, angle, lineWidth, fillColorHex, strokeColorHex, strokeWidth));
     }
 
-    drawNoteTail(x: number, y: number, s: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.NoteTail(x, y, s / 20, fillColorHex));
+    drawNoteTail(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.NoteTail(x, y, lineSpace / 20, fillColorHex));
     }
 
     drawClefG(x: number, y: number, lineSpace: number): RectBound {
@@ -473,20 +474,20 @@ export class Shape {
         return this.draw(Shape.ClefC(x, y, lineSpace / 20));
     }
 
-    drawText(x: number, y: number, text: string, s: number, fontFamily: string, colorHex: string): RectBound {
-        return this.draw(Shape.Text(x, y, text, s * 1.2 + 'px ' + fontFamily, colorHex));
+    drawText(x: number, y: number, text: string, lineSpace: number, fontFamily: string, colorHex: string): RectBound {
+        return this.draw(Shape.Text(x, y, text, lineSpace * 1.2 + 'px ' + fontFamily, colorHex));
     }
 
     drawSharp(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
         return this.draw(Shape.Sharp(x, y, lineSpace / 20, fillColorHex))
     }
 
-    drawRestore(x: number, y: number, s: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Restore(x, y, s / 20, fillColorHex))
+    drawRestore(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Restore(x, y, lineSpace / 20, fillColorHex))
     }
 
-    drawFlat(x: number, y: number, s: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Flat(x, y, s / 20, fillColorHex))
+    drawFlat(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.Flat(x, y, lineSpace / 20, fillColorHex))
     }
 
     drawRest_2(x: number, y: number, lineSpace: number, fillColorHex: string) {
