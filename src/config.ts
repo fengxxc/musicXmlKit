@@ -17,6 +17,7 @@ export class Config {
     private rowSpace: number; // 行间距，行包括多个线谱
     private measureNoFontHeight: number; // 小节号文字高度
     private singleDurationWidth: number; // 一拍在线谱上的宽度
+    private noteHeadAngle: number; // 符头旋转角度
 
     constructor(canvas: HTMLElement, musicXmlNode: RootNode) {
         
@@ -36,6 +37,7 @@ export class Config {
         this.rowSpace = 60;
         this.measureNoFontHeight = 10;
         this.singleDurationWidth = 24;
+        this.noteHeadAngle = 22;
     }
 
     
@@ -111,12 +113,15 @@ export class Config {
         return this.rowSpace;
     }
     
-    
     public get MeasureNoFontHeight() : number {
         return this.measureNoFontHeight;
     }
     
     public get SingleDurationWidth() : number {
         return this.singleDurationWidth;
+    }
+
+    public get NoteHeadAngle() : number {
+        return this.noteHeadAngle;
     }
 }
