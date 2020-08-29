@@ -6,4 +6,7 @@ test('RenderHelper test', () => {
 
     const line2 = RenderHelper.getLineByPitchSign('A', 4, 'G', 2);
     expect(line2).toBe(2.5);
+
+    const line3 = RenderHelper.getLineByPitchSign('F', 3, 'F', 4);
+    expect(line3).toBe(3.5); // 有误，line3是4，先TODO
 })

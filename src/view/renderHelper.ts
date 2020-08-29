@@ -1,5 +1,13 @@
 export default class RenderHelper {
 
+    /**
+     * 获取音符在五线谱上的位置
+     * 例如：在一线上，返回就是1；在一间上，返回就是1.5；在下加一线上，返回就是0
+     * @param step 本音符的音名
+     * @param octave 本音符在第几个八度
+     * @param clefSign 本小节谱号
+     * @param clefLine 本小节谱号所在第几线上
+     */
     static getLineByPitchSign(step: string, octave: number, clefSign: string, clefLine: number): number {
         let res: number = 0;
         // 获取step相对于'C'的ASCII距离，如step等于'E'，结果为2

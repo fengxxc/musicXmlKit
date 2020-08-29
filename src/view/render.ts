@@ -2,12 +2,14 @@ import { MxIterator } from "./mxIterator";
 import { RootNode } from "../model/rootNode";
 import { Shape } from "./shape";
 import { Config } from "../config";
-import MxToken from "./mxToken";
+import MxToken, { ClefToken } from "./mxToken";
 import RectBound from "./rectBound";
 import { Note } from "../model/interface/note";
 import { Backup } from "../model/interface/backup";
 import { Durational } from "../model/interface/durational";
 import { BackupNode } from "../model/backupNode";
+import RenderHelper from "./renderHelper";
+import { NoteNode } from "../model/noteNode";
 
 export class Render {
     
@@ -18,7 +20,8 @@ export class Render {
         const iterator = MxIterator.getIterator(musicXmlNode);
         let entry = null;
         
-        let lasttoken: MxToken = null;
+        // let lasttoken: MxToken = null;
+        let measureTokenTemp: MxToken[] = [];
         while (!(entry = iterator.next()).done) {
             const token: MxToken = entry.value;
             // console.log(token);
@@ -51,7 +54,9 @@ export class Render {
             }
             
             // 每小节开始要做的事...
+            const lasttoken: MxToken = measureTokenTemp.length > 0 ? measureTokenTemp[measureTokenTemp.length-1] : null;
             if (lasttoken == null || token.MeasureNo != lasttoken.MeasureNo) {
+                measureTokenTemp = [];
                 if (!isRowStart) {
                     token.Clefs.forEach(c => {
                         // 画小节分割线
@@ -63,7 +68,7 @@ export class Render {
                 gu.stepAhead(cfg.MeasureLeftPadding);
             }
 
-            // 画主角，就是音符他们
+            // 画主角，就是音符和他的朋友们
             if (token.SpiritType == 'note') {
                 const note: Note = <Note>token.Spirit;
                 
@@ -71,16 +76,45 @@ export class Render {
                     // 画休止符
                     Render.renderRestSign(shape, gu.X, gu.Y(note.Staff()), note.Type(), cfg.LineSpace, cfg.LineColor);
                 } else {
-                    // TODO 画音符
+                    // 画音符
+                    const clefToken: ClefToken = token.getClefByNumber(note.Staff());
+                    const line: number = RenderHelper.getLineByPitchSign(note.PitchStep(), note.PitchOctave(), clefToken.Sign, clefToken.Line);
+                    const _y = gu.Y(note.Staff()) + (cfg.LineSpace * 5) - (line * cfg.LineSpace);
+                    // 画符头
+                    if (note.Chord()) {
+                        gu.stepAhead(-(note.Duration() / token.Divisions * cfg.SingleDurationWidth));
+                    }
+                    const type: string = note.Type();
+                    if (type == 'breve' || type == 'whole' || type =='half') {
+                        shape.drawNoteHead(gu.X, _y, cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, 'transparent', cfg.LineColor, 1.5);
+                    } else {
+                        shape.drawNoteHead(gu.X, _y, cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor, 0);
+                    }
                     
                 }
-                gu.stepAhead(note.Duration() * cfg.SingleDurationWidth)
+                gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth)
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
-                gu.stepAhead(-(backup.Duration() * cfg.SingleDurationWidth));
+                // const backDistance = -(backup.Duration() / token.Divisions * cfg.SingleDurationWidth);
+                const backDistance = (() => {
+                    let realDuration: number = 0;
+                    let backupDuration: number = backup.Duration();
+                    for (let i = measureTokenTemp.length - 1; i >= 0; i--) {
+                        const _token: MxToken = measureTokenTemp[i];
+                        if (_token.SpiritType != 'note') continue;
+                        const note: NoteNode = <NoteNode>_token.Spirit;
+                        const noteDuration: number = note.Duration();
+                        backupDuration -= noteDuration;
+                        if (!note.Chord()) realDuration += noteDuration;
+                        if (backupDuration <= 0) break;
+                    }
+                    return realDuration / token.Divisions * cfg.SingleDurationWidth;
+                })();
+                gu.stepAhead(-backDistance);
             }
 
-            lasttoken = token;
+            // lasttoken = token;
+            measureTokenTemp.push(token);
             // TODO
         }
 
@@ -233,6 +267,10 @@ class Guide {
         return this.oX;
     }
     
+    /**
+     * 获取y轴坐标
+     * @param staff 在从上往下数第几个线谱上
+     */
     public Y(staff: number) : number {
         return this.oY + (staff - 1) * (this.cfg.StaveSpace + this.cfg.Stave5Height);
     }
@@ -263,3 +301,4 @@ class Guide {
         return this.curMeasureHeight;
     }
 }
+
