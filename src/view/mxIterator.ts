@@ -14,6 +14,7 @@ export class MxIterator {
             for (const measure of part.getChildNodes()) {
                 const _measure: MeasureNode = <MeasureNode>measure;
                 const attributes: AttributesNode = _measure.Attributes();
+                attr['divisions'] = attributes.Divisions() != null ? attributes.Divisions() : attr['divisions'];
                 attr['keyFifths'] = attributes.KeyFifths() != null ? attributes.KeyFifths() : attr['keyFifths'];
                 attr['keyMode'] = attributes.KeyMode() != null ? attributes.KeyMode() : attr['keyMode'];
                 attr['timeBeatType'] = attributes.TimeBeatType() != null? attributes.TimeBeatType() : attr['timeBeatType'];
@@ -24,6 +25,7 @@ export class MxIterator {
                     yield new MxToken(
                         // 第几小节
                         _measure.Number(),
+                        attr['divisions'],
                         // 五度圈里的位置，暂时这么理解
                         attr['keyFifths'],
                         // 调性：大调、小调 [major | minor]
