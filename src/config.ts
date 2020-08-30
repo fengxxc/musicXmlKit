@@ -36,7 +36,7 @@ export class Config {
         this.stave5Height = this.lineSpace * 4;
         this.rowSpace = 60;
         this.measureNoFontHeight = 10;
-        this.singleDurationWidth = 50;
+        this.singleDurationWidth = 58;
         this.noteHeadAngle = 22;
     }
 

@@ -108,4 +108,8 @@ export class NoteNode extends Node implements Note {
         return parseInt(f[0].getFullText());
     }
 
+    // @overwrite
+    Dot(): boolean {
+        return super.getChildNodesByName('dot').length != 0;
+    }
 }

@@ -100,4 +100,11 @@ export interface Note extends Durational {
      * @memberof Note
      */
     NotationsTechFret() : number;
+
+    /**
+     * 有符点吗？单标签
+     * @returns {boolean}
+     * @memberof Note
+     */
+    Dot() : boolean;
 }
