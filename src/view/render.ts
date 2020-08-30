@@ -6,8 +6,6 @@ import MxToken, { ClefToken } from "./mxToken";
 import RectBound from "./rectBound";
 import { Note } from "../model/interface/note";
 import { Backup } from "../model/interface/backup";
-import { Durational } from "../model/interface/durational";
-import { BackupNode } from "../model/backupNode";
 import RenderHelper from "./renderHelper";
 import { NoteNode } from "../model/noteNode";
 
@@ -20,7 +18,6 @@ export class Render {
         const iterator = MxIterator.getIterator(musicXmlNode);
         let entry = null;
         
-        // let lasttoken: MxToken = null;
         let measureTokenTemp: MxToken[] = [];
         while (!(entry = iterator.next()).done) {
             const token: MxToken = entry.value;
@@ -81,27 +78,25 @@ export class Render {
                     const line: number = RenderHelper.getLineByPitchSign(note.PitchStep(), note.PitchOctave(), clefToken.Sign, clefToken.Line);
                     const _y = gu.Y(note.Staff()) + (cfg.LineSpace * 5) - (line * cfg.LineSpace);
                     // 画符头
-                    if (note.Chord()) {
+                    if (note.Chord()) { 
+                        // 和弦音在x轴不前进，固退回
                         gu.stepAhead(-(note.Duration() / token.Divisions * cfg.SingleDurationWidth));
                     }
-                    const type: string = note.Type();
-                    if (type == 'breve' || type == 'whole' || type =='half') {
-                        shape.drawNoteHead(gu.X, _y, cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, 'transparent', cfg.LineColor, 1.5);
-                    } else {
-                        shape.drawNoteHead(gu.X, _y, cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor, 0);
+                    Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
+                    // 画符桿和符尾
+                    if (note.Type() != 'breve' && note.Type() != 'whole') {
+                        
                     }
-                    
                 }
-                gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth)
+                gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth);
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
-                // const backDistance = -(backup.Duration() / token.Divisions * cfg.SingleDurationWidth);
                 const backDistance = (() => {
                     let realDuration: number = 0;
                     let backupDuration: number = backup.Duration();
                     for (let i = measureTokenTemp.length - 1; i >= 0; i--) {
                         const _token: MxToken = measureTokenTemp[i];
-                        if (_token.SpiritType != 'note') continue;
+                        if (!(_token.Spirit instanceof NoteNode)) continue;
                         const note: NoteNode = <NoteNode>_token.Spirit;
                         const noteDuration: number = note.Duration();
                         backupDuration -= noteDuration;
@@ -112,8 +107,6 @@ export class Render {
                 })();
                 gu.stepAhead(-backDistance);
             }
-
-            // lasttoken = token;
             measureTokenTemp.push(token);
             // TODO
         }
@@ -247,6 +240,14 @@ export class Render {
                 return shape.drawRest_16(x, y + lineSpace * 2, lineSpace, colorHex);
             default: // TODO 其他分休止符 32、64等
                 return null;
+        }
+    }
+
+    static renderNoteHeader(shape: Shape, x: number, y: number, noteType: string, lineSpace: number, noteHeadAngle: number, lineWidth: number, fillColorHex: string, strokeColorHex: string): RectBound {
+        if (noteType == 'breve' || noteType == 'whole' || noteType =='half') {
+            return shape.drawNoteHead(x, y, lineSpace, noteHeadAngle, lineWidth, 'transparent', strokeColorHex, lineWidth * 3/2); // 符头描边宽度先偷个懒 _(:з)∠)_
+        } else {
+            return shape.drawNoteHead(x, y, lineSpace, noteHeadAngle, lineWidth, fillColorHex, strokeColorHex, 0);
         }
     }
 }
