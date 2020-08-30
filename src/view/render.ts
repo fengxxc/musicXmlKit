@@ -1,13 +1,14 @@
-import { MxIterator } from "./mxIterator";
-import { RootNode } from "../model/rootNode";
-import { Shape } from "./shape";
 import { Config } from "../config";
+import { Backup } from "../model/interface/backup";
+import { Note } from "../model/interface/note";
+import { NoteNode } from "../model/noteNode";
+import { RootNode } from "../model/rootNode";
+import { MxIterator } from "./mxIterator";
 import MxToken, { ClefToken } from "./mxToken";
 import RectBound from "./rectBound";
-import { Note } from "../model/interface/note";
-import { Backup } from "../model/interface/backup";
 import RenderHelper from "./renderHelper";
-import { NoteNode } from "../model/noteNode";
+import { Shape } from "./shape";
+import NoteRenderInfo from "./noteRenderInfo";
 
 export class Render {
     
@@ -18,57 +19,55 @@ export class Render {
         const iterator = MxIterator.getIterator(musicXmlNode);
         let entry = null;
         
-        let measureTokenTemp: MxToken[] = [];
+        let noteRenderInfoTemp: NoteRenderInfo[] = [];
         while (!(entry = iterator.next()).done) {
             const token: MxToken = entry.value;
             // console.log(token);
-            
-            const isRowStart:boolean = gu.isRowStart();
-            // 每行开始要做的事...
-            if (isRowStart) {
-                gu.CurMeasureHeight= (token.Clefs.length - 1) * (cfg.StaveSpace + cfg.Stave5Height) + cfg.Stave5Height;
-                // 一整行谱左边的起始竖线
-                shape.drawLine(gu.X, gu.Y(1), gu.X, gu.Y(1) + gu.CurMeasureHeight, cfg.LineWidth, cfg.LineColor);
-                let curMeasureStartX = 0; // 本小节起始x
-                token.Clefs.forEach(c => {
-                    let _x = gu.X;
-                    const _y: number = gu.Y(c.Number);
-                    // 画五线谱 TODO 多声部
-                    shape.drawMultiHorizontalLine(_x, _y, cfg.ContentWidth, cfg.LineWidth, cfg.LineColor, 5, cfg.LineSpace);
-                    // 画谱号
-                    const cRb: RectBound = Render.renderClefSign(shape, c.Sign, _x += cfg.RowLeftPadding, _y + cfg.Stave5Height - (c.Line - 1) * cfg.LineSpace, cfg.LineSpace);
-                    // gu.stepAhead(rb.Width);
-                    // 画音调符号
-                    const kRb: RectBound = Render.renderKeySign(shape, _x += cRb.Width + cfg.MeasureLeftPadding, _y, token.Fifths, token.Mode, c.Sign, c.Line, cfg.LineSpace, cfg.LineColor);
-                    // 画拍号
-                    const tRb: RectBound = Render.renderTimeBeat(shape, _x += kRb.Width, _y, token.TimeBeatType, token.TimeBeats, cfg.LineSpace, cfg.LineColor);
-                    if (c.Number == 1) {
-                        curMeasureStartX = _x += tRb.Width;
-                    }
-                })
-                gu.stepAhead(curMeasureStartX);
-                // break; // for test
-            }
-            
-            // 每小节开始要做的事...
-            const lasttoken: MxToken = measureTokenTemp.length > 0 ? measureTokenTemp[measureTokenTemp.length-1] : null;
-            if (lasttoken == null || token.MeasureNo != lasttoken.MeasureNo) {
-                measureTokenTemp = [];
-                if (!isRowStart) {
-                    token.Clefs.forEach(c => {
-                        // 画小节分割线
-                        shape.drawVerticalLine(gu.X, gu.Y(c.Number), cfg.Stave5Height, cfg.LineWidth, cfg.LineColor);
-                    })
-                }
-                // 画小节号
-                shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo+'', cfg.MeasureNoFontHeight, 'Microsoft Yahei', cfg.LineColor);
-                gu.stepAhead(cfg.MeasureLeftPadding);
-            }
-
-            // 画主角，就是音符和他的朋友们
             if (token.SpiritType == 'note') {
-                const note: Note = <Note>token.Spirit;
+                const isNewRow:boolean = gu.isRowStart();
+                // 如果是行开始...
+                if (isNewRow) {
+                    gu.CurMeasureHeight= (token.Clefs.length - 1) * (cfg.StaveSpace + cfg.Stave5Height) + cfg.Stave5Height;
+                    // 一整行谱左边的起始竖线
+                    shape.drawLine(gu.X, gu.Y(1), gu.X, gu.Y(1) + gu.CurMeasureHeight, cfg.LineWidth, cfg.LineColor);
+                    let curMeasureStartX = 0; // 本小节起始x
+                    token.Clefs.forEach(c => {
+                        let _x = gu.X;
+                        const _y: number = gu.Y(c.Number);
+                        // 画五线谱 TODO 多声部
+                        shape.drawMultiHorizontalLine(_x, _y, cfg.ContentWidth, cfg.LineWidth, cfg.LineColor, 5, cfg.LineSpace);
+                        // 画谱号
+                        const cRb: RectBound = Render.renderClefSign(shape, c.Sign, _x += cfg.RowLeftPadding, _y + cfg.Stave5Height - (c.Line - 1) * cfg.LineSpace, cfg.LineSpace);
+                        // gu.stepAhead(rb.Width);
+                        // 画音调符号
+                        const kRb: RectBound = Render.renderKeySign(shape, _x += cRb.Width + cfg.MeasureLeftPadding, _y, token.Fifths, token.Mode, c.Sign, c.Line, cfg.LineSpace, cfg.LineColor);
+                        // 画拍号
+                        const tRb: RectBound = Render.renderTimeBeat(shape, _x += kRb.Width, _y, token.TimeBeatType, token.TimeBeats, cfg.LineSpace, cfg.LineColor);
+                        if (c.Number == 1) {
+                            curMeasureStartX = _x += tRb.Width;
+                        }
+                    })
+                    gu.stepAhead(curMeasureStartX);
+                    // break; // for test
+                }
                 
+                // 如果是小节开始...
+                const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length-1] : null;
+                if (lastNoteInfo == null || token.MeasureNo != lastNoteInfo.MeasureNo) {
+                    noteRenderInfoTemp = [];
+                    if (!isNewRow) {
+                        token.Clefs.forEach(c => {
+                            // 画小节分割线
+                            shape.drawVerticalLine(gu.X, gu.Y(c.Number), cfg.Stave5Height, cfg.LineWidth, cfg.LineColor);
+                        })
+                    }
+                    // 画小节号
+                    shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo+'', cfg.MeasureNoFontHeight, 'Microsoft Yahei', cfg.LineColor);
+                    gu.stepAhead(cfg.MeasureLeftPadding);
+                }
+
+                // 开始画音符和他的朋友们
+                const note: Note = <Note>token.Spirit;
                 if (note.Rest()) {
                     // 画休止符
                     Render.renderRestSign(shape, gu.X, gu.Y(note.Staff()), note.Type(), cfg.LineSpace, cfg.LineColor);
@@ -85,29 +84,29 @@ export class Render {
                     Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
                     // 画符桿和符尾
                     if (note.Type() != 'breve' && note.Type() != 'whole') {
-                        
+                        // TODO
                     }
                 }
                 gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth);
+                noteRenderInfoTemp.push(new NoteRenderInfo(token.MeasureNo, note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave()));
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
                 const backDistance = (() => {
                     let realDuration: number = 0;
                     let backupDuration: number = backup.Duration();
-                    for (let i = measureTokenTemp.length - 1; i >= 0; i--) {
-                        const _token: MxToken = measureTokenTemp[i];
-                        if (!(_token.Spirit instanceof NoteNode)) continue;
-                        const note: NoteNode = <NoteNode>_token.Spirit;
-                        const noteDuration: number = note.Duration();
+                    for (let i = noteRenderInfoTemp.length - 1; i >= 0; i--) {
+                        const noteRenderInfo: NoteRenderInfo = noteRenderInfoTemp[i];
+                        const noteDuration: number = noteRenderInfo.Duration;
                         backupDuration -= noteDuration;
-                        if (!note.Chord()) realDuration += noteDuration;
+                        if (!noteRenderInfo.IsChord) realDuration += noteDuration;
                         if (backupDuration <= 0) break;
                     }
                     return realDuration / token.Divisions * cfg.SingleDurationWidth;
                 })();
                 gu.stepAhead(-backDistance);
+            } else if (token.SpiritType == 'direction') {
+                // TODO
             }
-            measureTokenTemp.push(token);
             // TODO
         }
 
@@ -231,7 +230,7 @@ export class Render {
             case 'quarter': // 四分休止符
                 return shape.drawRest_4(x, y + lineSpace * 2, lineSpace, colorHex);
             case 'eighth': // 八分休止符
-                return shape.drawRest_8(x, y + lineSpace * 2, lineSpace, colorHex);
+                return shape.drawRest_8(x, y + lineSpace * 1.5, lineSpace, colorHex);
             case 'half': // 二分休止符
                 return shape.drawRest_2(x, y + lineSpace * 1.5, lineSpace, colorHex);
             case 'whole': // 全休止符
@@ -302,4 +301,3 @@ class Guide {
         return this.curMeasureHeight;
     }
 }
-
