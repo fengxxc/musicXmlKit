@@ -48,7 +48,14 @@ export class Render {
                     }
                     // 画符桿和符尾
                     if (note.Type() != 'breve' && note.Type() != 'whole') {
-                        // TODO
+                        if (note.Duration() / token.Divisions >= 1) {
+                            // == 1 是4分音符， > 1 是2分音符， 他们都有相同的符桿
+                            if (note.Stem() == 'down') {
+                                shape.drawVerticalLine(gu.X - Math.floor(hRb.Width / 2), _y, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineColor);
+                            } else {
+                                shape.drawVerticalLine(gu.X + Math.floor(hRb.Width / 2), _y, -cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineColor);
+                            }
+                        }
                     }
                 }
                 gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth);
