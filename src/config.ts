@@ -31,7 +31,7 @@ export class Config {
         this.lineWidth = 1;
         this.lineColor = "#000";
         this.rowLeftPadding = 15;
-        this.measureLeftPadding = 15;
+        this.measureLeftPadding = this.lineSpace * 2;
         this.staveSpace = 40;
         this.stave5Height = this.lineSpace * 4;
         this.rowSpace = 60;
