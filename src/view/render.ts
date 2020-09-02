@@ -25,41 +25,43 @@ export class Render {
             // console.log(token);
             if (token.SpiritType == 'note') {
                 // 做渲染音符之前应该做的事...
-                Render.beforeRenderNote(gu, token, cfg, shape, noteRenderInfoTemp);
+                noteRenderInfoTemp = Render.beforeRenderNote(gu, token, cfg, shape, noteRenderInfoTemp);
 
                 // 开始渲染音符和他的朋友们
                 const note: Note = <Note>token.Spirit;
+                let _y = gu.Y(note.Staff());
+                let noteHeadRectBound: RectBound = new RectBound(0, 0);
                 if (note.Rest()) {
                     // 画休止符
-                    Render.renderRestSign(shape, gu.X, gu.Y(note.Staff()), note.Type(), cfg.LineSpace, cfg.LineColor);
+                    Render.renderRestSign(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.LineColor);
                 } else {
                     // 画音符
                     const clefToken: ClefToken = token.getClefByNumber(note.Staff());
                     const line: number = RenderHelper.getLineByPitchSign(note.PitchStep(), note.PitchOctave(), clefToken.Sign, clefToken.Line);
-                    const _y = gu.Y(note.Staff()) + (cfg.LineSpace * 5) - (line * cfg.LineSpace);
+                    _y += (cfg.LineSpace * 5) - (line * cfg.LineSpace);
                     // 画符头
                     if (note.Chord()) { // 和弦音在x轴不前进，固退回
                         gu.stepAhead(-(note.Duration() / token.Divisions * cfg.SingleDurationWidth));
                     }
-                    const hRb: RectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
+                    noteHeadRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
                     // 画符点
                     if (note.Dot()) {
-                        shape.drawPoint(gu.X + hRb.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
+                        shape.drawPoint(gu.X + noteHeadRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
                     }
-                    // 画符桿和符尾
-                    if (note.Type() != 'breve' && note.Type() != 'whole') {
+                    
+                    /* if (note.Type() != 'breve' && note.Type() != 'whole') {
                         if (note.Duration() / token.Divisions >= 1) {
                             // == 1 是4分音符， > 1 是2分音符， 他们都有相同的符桿
                             if (note.Stem() == 'down') {
                                 shape.drawVerticalLine(gu.X - Math.floor(hRb.Width / 2), _y, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineColor);
                             } else {
                                 shape.drawVerticalLine(gu.X + Math.floor(hRb.Width / 2), _y, -cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineColor);
-                            }
+                            } 
                         }
-                    }
+                    } */
                 }
+                noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteHeadRectBound.Width, note.Stem(), note.Staff()) );
                 gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth);
-                noteRenderInfoTemp.push(new NoteRenderInfo(token.MeasureNo, note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave()));
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
                 const backDistance = (() => {
@@ -80,10 +82,68 @@ export class Render {
             }
             // TODO
         }
-
+        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineColor);
     }
 
-    private static beforeRenderNote(gu: Guide, token: MxToken, cfg: Config, shape: Shape, noteRenderInfoTemp: NoteRenderInfo[]) {
+    private static completeRenderMeasureNotes(noteRenderInfos: NoteRenderInfo[], shape: Shape, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, colorHex: string) {
+        let _start: number = 0, _end: number = 0;
+        for (let i = 0; i < noteRenderInfos.length; i++) {
+            const noteInfo: NoteRenderInfo = noteRenderInfos[i];
+            if (noteInfo.IsRest) continue;
+            const timeLength = noteInfo.Duration / noteInfo.Divisions;
+            if (timeLength < 1) {
+                _start = i;
+                _end = _start;
+                for (let timeLen = 0; _end < noteRenderInfos.length; _end++) {
+                    const nri: NoteRenderInfo = noteRenderInfos[_end];
+                    if (nri.IsRest) break;
+                    if (_end > _start && nri.Staff != noteRenderInfos[_end - 1].Staff) {
+                        break;
+                    }
+                    const tl = nri.IsChord ? 0 : nri.Duration / nri.Divisions
+                    if (timeLen + tl > 1.5) {
+                        break;
+                    }
+                    timeLen += tl;
+                }
+                Render.renderAQuarterTimeNotes(noteRenderInfos, _start, _end - 1, noteStemHeight, noteStemWidth, noteBeamWidth, colorHex);
+                i = _end - 1;
+            } else {
+                // timeLength == 1 是4分音符，timeLength > 1 是2分音符， 他们都有相同的符桿
+                // 画符桿和符尾
+                if (noteInfo.Stem == 'down') {
+                    shape.drawVerticalLine(noteInfo.X - Math.floor(noteInfo.HeadWidth / 2), noteInfo.Y, noteStemHeight, noteStemWidth, colorHex);
+                } else {
+                    shape.drawVerticalLine(noteInfo.X + Math.floor(noteInfo.HeadWidth / 2), noteInfo.Y, -noteStemHeight, noteStemWidth, colorHex);
+                }
+            }
+        }
+    }
+
+    /**
+     *  渲染4分音符长度内的音符的符桿、符杠
+     * @private
+     * @static
+     * @param {NoteRenderInfo[]} noteRenderInfos
+     * @param {number} start   包括
+     * @param {number} end     包括
+     * @param {number} noteStemHeight
+     * @param {number} noteStemWidth
+     * @param {number} noteBeamWidth
+     * @param {string} colorHex
+     * @memberof Render
+     */
+    private static renderAQuarterTimeNotes(noteRenderInfos: NoteRenderInfo[], start: number, end: number, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, colorHex: string) {
+        // console.log(noteRenderInfos[start].MeasureNo + ' ↓↓↓↓↓↓↓↓↓↓↓↓↓')
+        for (; start < noteRenderInfos.length && start <= end; start++) {
+            const noteInfo = noteRenderInfos[start];
+            // console.log(noteInfo.PitchStep, noteInfo.PitchOctave, noteInfo.Duration / noteInfo.Divisions);
+            // TODO
+        }
+        // console.log('↑↑↑↑↑↑↑↑↑↑↑↑↑')
+    }
+
+    private static beforeRenderNote(gu: Guide, token: MxToken, cfg: Config, shape: Shape, noteRenderInfoTemp: NoteRenderInfo[]): NoteRenderInfo[] {
         const isNewRow: boolean = gu.isRowStart();
         // 如果是行开始...
         if (isNewRow) {
@@ -112,6 +172,8 @@ export class Render {
         // 如果是小节开始...
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;
         if (lastNoteInfo == null || token.MeasureNo != lastNoteInfo.MeasureNo) {
+            // 画小节内符桿、符尾、符杠
+            Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineColor);
             noteRenderInfoTemp = [];
             if (!isNewRow) {
                 token.Clefs.forEach(c => {
@@ -123,6 +185,7 @@ export class Render {
             shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo + '', cfg.MeasureNoFontHeight, 'Microsoft Yahei', cfg.LineColor);
             gu.stepAhead(cfg.MeasureLeftPadding);
         }
+        return noteRenderInfoTemp;
     }
 
     /**
@@ -135,7 +198,7 @@ export class Render {
      * @param {number} lineSpace
      * @memberof Render
      */
-    static renderClefSign(shape: Shape, sign: string, x: number, y: number, lineSpace: number): RectBound {
+    private static renderClefSign(shape: Shape, sign: string, x: number, y: number, lineSpace: number): RectBound {
         switch (sign) {
             case 'G':
                 return shape.drawClefG(x, y, lineSpace);
@@ -164,7 +227,7 @@ export class Render {
      * @returns {RectBound}
      * @memberof Render
      */
-    static renderKeySign(shape: Shape, x: number, y: number, fifths: number, mode: string, clefSign: string, clefLine: number, lineSpace: number, colorHex: string): RectBound {
+    private static renderKeySign(shape: Shape, x: number, y: number, fifths: number, mode: string, clefSign: string, clefLine: number, lineSpace: number, colorHex: string): RectBound {
         /**
          * musicXml中fifths值说明：
          * 数字     大调    小调
@@ -232,13 +295,13 @@ export class Render {
         return new RectBound(pos.length * rb.Width, rb.Height + (Math.abs(fifths) - 1) * lineSpace);
     }
 
-    static renderTimeBeat(shape: Shape, x: number, y: number, timeBeatType: number, timeBeats: number, lineSpace: number, colorHex: string): RectBound {
+    private static renderTimeBeat(shape: Shape, x: number, y: number, timeBeatType: number, timeBeats: number, lineSpace: number, colorHex: string): RectBound {
         const rb: RectBound =shape.drawText(x, y, timeBeats+'', lineSpace * 2, 'Microsoft Yahei', colorHex);
         shape.drawText(x, y + lineSpace * 2, timeBeatType+'', lineSpace * 2, 'Microsoft Yahei', colorHex);
         return new RectBound(rb.Width, lineSpace * 4);
     }
 
-    static renderRestSign(shape: Shape, x: number, y: number, restType: string, lineSpace: number, colorHex: string): RectBound {
+    private static renderRestSign(shape: Shape, x: number, y: number, restType: string, lineSpace: number, colorHex: string): RectBound {
         switch (restType) {
             case 'quarter': // 四分休止符
                 return shape.drawRest_4(x, y + lineSpace * 2, lineSpace, colorHex);
@@ -255,7 +318,7 @@ export class Render {
         }
     }
 
-    static renderNoteHeader(shape: Shape, x: number, y: number, noteType: string, lineSpace: number, noteHeadAngle: number, lineWidth: number, fillColorHex: string, strokeColorHex: string): RectBound {
+    private static renderNoteHeader(shape: Shape, x: number, y: number, noteType: string, lineSpace: number, noteHeadAngle: number, lineWidth: number, fillColorHex: string, strokeColorHex: string): RectBound {
         if (noteType == 'breve' || noteType == 'whole' || noteType =='half') {
             return shape.drawNoteHead(x, y, lineSpace, noteHeadAngle, lineWidth, 'transparent', strokeColorHex, lineWidth * 3/2); // 符头描边宽度先偷个懒 _(:з)∠)_
         } else {
