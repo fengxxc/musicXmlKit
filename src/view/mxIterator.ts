@@ -13,7 +13,7 @@ export class MxIterator {
         for (const part of parts) {
             for (const measure of part.getChildNodes()) {
                 const _measure: MeasureNode = <MeasureNode>measure;
-                const attributes: AttributesNode = _measure.Attributes();
+                const attributes: AttributesNode = _measure.Attributes() || new AttributesNode();
                 attr['divisions'] = attributes.Divisions() != null ? attributes.Divisions() : attr['divisions'];
                 attr['keyFifths'] = attributes.KeyFifths() != null ? attributes.KeyFifths() : attr['keyFifths'];
                 attr['keyMode'] = attributes.KeyMode() != null ? attributes.KeyMode() : attr['keyMode'];

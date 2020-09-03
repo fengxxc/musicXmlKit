@@ -3,7 +3,7 @@
 <score-partwise version="2.0">
  <identification>
   <encoding>
-   <encoding-date>2020-08-02</encoding-date>
+   <encoding-date>2020-09-03</encoding-date>
    <software>Guitar Pro 7.5.0</software>
   </encoding>
  </identification>
@@ -258,6 +258,9 @@
     <staff>1</staff>
     <beam number="1">begin</beam>
     <notations>
+     <dynamics>
+      <pp/>
+     </dynamics>
      <technical>
       <string>1</string>
       <fret>14</fret>
@@ -279,6 +282,9 @@
     <staff>1</staff>
     <beam number="1">begin</beam>
     <notations>
+     <dynamics>
+      <pp/>
+     </dynamics>
      <technical>
       <string>2</string>
       <fret>16</fret>
@@ -467,9 +473,127 @@
    </note>
   </measure>
   <measure number="3">
-   <attributes>
-    <divisions>1</divisions>
-   </attributes>
+   <note>
+    <pitch>
+     <step>G</step>
+     <alter>1</alter>
+     <octave>4</octave>
+    </pitch>
+    <duration>2</duration>
+    <voice>1</voice>
+    <type>eighth</type>
+    <stem>up</stem>
+    <notehead>normal</notehead>
+    <staff>1</staff>
+    <beam number="1">begin</beam>
+    <notations>
+     <technical>
+      <string>1</string>
+      <fret>4</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
+    <pitch>
+     <step>A</step>
+     <alter>1</alter>
+     <octave>4</octave>
+    </pitch>
+    <duration>1</duration>
+    <voice>1</voice>
+    <type>16th</type>
+    <stem>up</stem>
+    <notehead>normal</notehead>
+    <staff>1</staff>
+    <beam number="1">continue</beam>
+    <beam number="2">begin</beam>
+    <notations>
+     <technical>
+      <string>1</string>
+      <fret>6</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
+    <pitch>
+     <step>B</step>
+     <octave>4</octave>
+    </pitch>
+    <duration>1</duration>
+    <voice>1</voice>
+    <type>16th</type>
+    <stem>up</stem>
+    <notehead>normal</notehead>
+    <staff>1</staff>
+    <beam number="1">continue</beam>
+    <beam number="2">continue</beam>
+    <notations>
+     <technical>
+      <string>1</string>
+      <fret>7</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
+    <pitch>
+     <step>B</step>
+     <octave>4</octave>
+    </pitch>
+    <duration>1</duration>
+    <voice>1</voice>
+    <type>16th</type>
+    <stem>up</stem>
+    <notehead>normal</notehead>
+    <staff>1</staff>
+    <beam number="1">continue</beam>
+    <beam number="2">continue</beam>
+    <notations>
+     <technical>
+      <string>1</string>
+      <fret>7</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
+    <pitch>
+     <step>A</step>
+     <alter>1</alter>
+     <octave>4</octave>
+    </pitch>
+    <duration>1</duration>
+    <voice>1</voice>
+    <type>16th</type>
+    <stem>up</stem>
+    <notehead>normal</notehead>
+    <staff>1</staff>
+    <beam number="1">end</beam>
+    <beam number="2">end</beam>
+    <notations>
+     <technical>
+      <string>1</string>
+      <fret>6</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
+    <pitch>
+     <step>G</step>
+     <alter>1</alter>
+     <octave>4</octave>
+    </pitch>
+    <duration>2</duration>
+    <voice>1</voice>
+    <type>eighth</type>
+    <stem>up</stem>
+    <notehead>normal</notehead>
+    <staff>1</staff>
+    <notations>
+     <technical>
+      <string>1</string>
+      <fret>4</fret>
+     </technical>
+    </notations>
+   </note>
   </measure>
  </part>
 </score-partwise>
