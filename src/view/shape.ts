@@ -109,6 +109,21 @@ export class Shape {
         )
     }
 
+    static NoteTailFlip(x: number, y: number, scale: number=1, fillColorHex: string): zrender {
+        const _scale =scale;
+        return new zrender.path.createFromString(
+            'M' + (x) + ',' + (y)
+            + 'l0,-17c0,0,22.931,-1.198,21,-32c-0.125,-1.998,6.524,14.894,0,29c-2.143,4.633,-9.458,7.413,-15,11c-2.03,1.314,-6,9,-6,9z'
+            , {
+                origin: [x, y],
+                scale: [_scale, _scale],
+                style: {
+                    fill: fillColorHex
+                }
+            }
+        )
+    }
+
     /**
      * G谱号
      * 默认谱线间距是20
@@ -460,6 +475,10 @@ export class Shape {
 
     drawNoteTail(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
         return this.draw(Shape.NoteTail(x, y, lineSpace / 20, fillColorHex));
+    }
+
+    drawNoteTailFlip(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
+        return this.draw(Shape.NoteTailFlip(x, y, lineSpace / 20, fillColorHex));
     }
 
     drawClefG(x: number, y: number, lineSpace: number): RectBound {

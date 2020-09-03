@@ -20,8 +20,9 @@ export class Render {
         let entry = null;
         
         let noteRenderInfoTemp: NoteRenderInfo[] = [];
+        let token: MxToken = null;
         while (!(entry = iterator.next()).done) {
-            const token: MxToken = entry.value;
+            token = entry.value;
             // console.log(token);
             if (token.SpiritType == 'note') {
                 // 做渲染音符之前应该做的事...
@@ -48,19 +49,8 @@ export class Render {
                     if (note.Dot()) {
                         shape.drawPoint(gu.X + noteHeadRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
                     }
-                    
-                    /* if (note.Type() != 'breve' && note.Type() != 'whole') {
-                        if (note.Duration() / token.Divisions >= 1) {
-                            // == 1 是4分音符， > 1 是2分音符， 他们都有相同的符桿
-                            if (note.Stem() == 'down') {
-                                shape.drawVerticalLine(gu.X - Math.floor(hRb.Width / 2), _y, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineColor);
-                            } else {
-                                shape.drawVerticalLine(gu.X + Math.floor(hRb.Width / 2), _y, -cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineColor);
-                            } 
-                        }
-                    } */
                 }
-                noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteHeadRectBound.Width, note.Stem(), note.Staff()) );
+                noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteHeadRectBound.Width, note.Stem(), note.Staff(), note.Dot()) );
                 gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth);
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
@@ -82,10 +72,13 @@ export class Render {
             }
             // TODO
         }
-        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineColor);
+        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineSpace, cfg.LineColor);
     }
 
-    private static completeRenderMeasureNotes(noteRenderInfos: NoteRenderInfo[], shape: Shape, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, colorHex: string) {
+    private static completeRenderMeasureNotes(noteRenderInfos: NoteRenderInfo[], shape: Shape, beats: number, beatType: number, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, colorHex: string) {
+        // 设4分音符长度为1，在一组连体音符中有多少个4分音符长度
+        const quarterCountInSiamesed: number = Render.computeQuarterCountInSiamesed(beats, beatType);
+        // console.log(quarterCountInSiamesed);
         let _start: number = 0, _end: number = 0;
         for (let i = 0; i < noteRenderInfos.length; i++) {
             const noteInfo: NoteRenderInfo = noteRenderInfos[i];
@@ -101,12 +94,12 @@ export class Render {
                         break;
                     }
                     const tl = nri.IsChord ? 0 : nri.Duration / nri.Divisions
-                    if (timeLen + tl > 1.5) {
+                    if (timeLen + tl > quarterCountInSiamesed) {
                         break;
                     }
                     timeLen += tl;
                 }
-                Render.renderAQuarterTimeNotes(noteRenderInfos, _start, _end - 1, noteStemHeight, noteStemWidth, noteBeamWidth, colorHex);
+                Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1 shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, colorHex);
                 i = _end - 1;
             } else {
                 // timeLength == 1 是4分音符，timeLength > 1 是2分音符， 他们都有相同的符桿
@@ -118,6 +111,19 @@ export class Render {
                 }
             }
         }
+    }
+
+    private static renderNoteTails(shape: Shape, x: number, y: number, stemDire: number, count: number, lineSpace: number, colorHex: string): RectBound {
+        // shape.drawText(x, y, count+'', 20, '微软雅黑', '#000')
+        for (let i = 0; i < count; i++) {
+            if (stemDire == -1) {
+                shape.drawNoteTail(x, y - stemDire * lineSpace*2 * i, lineSpace, colorHex);
+            } else {
+                shape.drawNoteTailFlip(x, y - stemDire * lineSpace*2 * i,lineSpace, colorHex);
+            }
+            
+        }
+        return null;
     }
 
     /**
@@ -133,12 +139,53 @@ export class Render {
      * @param {string} colorHex
      * @memberof Render
      */
-    private static renderAQuarterTimeNotes(noteRenderInfos: NoteRenderInfo[], start: number, end: number, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, colorHex: string) {
+    private static renderSiamesedNotes(noteRenderInfos: NoteRenderInfo[], start: number, end: number, shape: Shape, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, colorHex: string) {
         // console.log(noteRenderInfos[start].MeasureNo + ' ↓↓↓↓↓↓↓↓↓↓↓↓↓')
+        // 符桿朝上吗？1 是下；-1是上
+        const stemDire: number = noteRenderInfos[start].Stem == 'up' ? -1 : 1;
+
+        // 只有一个音符 || 只有一组和弦
+        if (start == end || noteRenderInfos[end].X - noteRenderInfos[start].X == 0) {
+            const nri: NoteRenderInfo = noteRenderInfos[start];
+            const y = ( () => Math.min( ...noteRenderInfos.slice(start, end+1).map(n => n.Y * stemDire) ) * stemDire )();
+            // console.log(y)
+            // 渲染符桿
+            // 符桿长度
+            const stemHeight: number = (noteStemHeight + Math.abs(noteRenderInfos[end].Y - noteRenderInfos[start].Y)) * (stemDire);
+            shape.drawVerticalLine(nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y, stemHeight, noteStemWidth, colorHex);
+            // noteRenderInfos.slice(start, end+1).map(n => shape.drawPoint(n.X, n.Y, 4, '#ff0', '#ff0') && console.log(n.Y))
+            // 渲染符尾
+            const durationWithoutDot: number = nri.IsDot ? nri.Duration * 2 / 3 : nri.Duration;
+            const count: number = Math.log(0.5 / (durationWithoutDot / nri.Divisions)) / Math.log(2) + 1;
+            Render.renderNoteTails(shape, nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y+stemHeight, stemDire, count, lineSpace, colorHex);
+            return;
+        }
+
+        // 符杠倾斜角度的正切值
+        const tan = (noteRenderInfos[end].Y - noteRenderInfos[start].Y) / (noteRenderInfos[end].X - noteRenderInfos[start].X);
+        const startTailY: number = (() => {
+            let high: NoteRenderInfo= noteRenderInfos[start];
+            let low: NoteRenderInfo= noteRenderInfos[start];
+            // 符桿朝上就取最高的，朝下就取最低的
+            for (let i = start + 1; i <= end; i++) {
+                const nri: NoteRenderInfo = noteRenderInfos[i];
+                if (nri.Y > low.Y) {
+                    low = nri;
+                }
+                if (nri.Y < high.Y) {
+                    high = nri;
+                }
+            }
+            const target: NoteRenderInfo = stemDire == -1 ? high : low;
+            shape.drawPoint(target.X, target.Y, 1, '#0f0', '#0f0');
+            return target.Y - (target.X - noteRenderInfos[start].X) * tan + (noteStemHeight * stemDire);
+        })();
+        shape.drawPoint(noteRenderInfos[start].X, startTailY, 2, '#00f', '#00f');
+
         for (; start < noteRenderInfos.length && start <= end; start++) {
             const noteInfo = noteRenderInfos[start];
             // console.log(noteInfo.PitchStep, noteInfo.PitchOctave, noteInfo.Duration / noteInfo.Divisions);
-            // TODO
+
         }
         // console.log('↑↑↑↑↑↑↑↑↑↑↑↑↑')
     }
@@ -173,7 +220,7 @@ export class Render {
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;
         if (lastNoteInfo == null || token.MeasureNo != lastNoteInfo.MeasureNo) {
             // 画小节内符桿、符尾、符杠
-            Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineColor);
+            Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineSpace, cfg.LineColor);
             noteRenderInfoTemp = [];
             if (!isNewRow) {
                 token.Clefs.forEach(c => {
@@ -324,6 +371,25 @@ export class Render {
         } else {
             return shape.drawNoteHead(x, y, lineSpace, noteHeadAngle, lineWidth, fillColorHex, strokeColorHex, 0);
         }
+    }
+
+    /**
+     * 计算：设4分音符长度为1，在一组连体音符中有多少个4分音符长度
+     * @static
+     * @param {number} beats 一小节有几拍
+     * @param {number} beatType 以几分音符为一拍
+     * @returns
+     * @memberof Render
+     */
+    private static computeQuarterCountInSiamesed(beats: number, beatType: number) {
+        // const eighthCount: number = 8 / down * up;
+        if (beatType >= 8)
+            if (beats % 3 == 0) return 1.5;
+            else return 1;
+        else if (beatType >= 4)
+            return 1;
+        else
+            return 2;
     }
 }
 

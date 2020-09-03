@@ -35,7 +35,10 @@ export default class NoteRenderInfo {
     // 在哪个五线谱上
     private staff: number;
 
-    constructor(measureNo: number, isRest: boolean, isChord: boolean, divisions: number, duration: number, pitchStep: string, pitchOctave: number, x: number, y: number, headWidth: number, stem: string, staff: number) {
+    // 是否是附点音符
+    private isDot: boolean;
+
+    constructor(measureNo: number, isRest: boolean, isChord: boolean, divisions: number, duration: number, pitchStep: string, pitchOctave: number, x: number, y: number, headWidth: number, stem: string, staff: number, isDot: boolean) {
         this.measureNo = measureNo;
         this.isRest = isRest;
         this.isChord = isChord;
@@ -48,6 +51,7 @@ export default class NoteRenderInfo {
         this.headWidth = headWidth;
         this.stem = stem;
         this.staff = staff;
+        this.isDot = isDot;
     }
     get MeasureNo(): number { return this.measureNo; }
     set MeasureNo(measureNo: number) { this.measureNo = measureNo; }
@@ -73,4 +77,6 @@ export default class NoteRenderInfo {
     set Stem(stem: string) { this.stem = stem; }
     get Staff(): number { return this.staff; }
     set Staff(staff: number) { this.staff = staff; }
+    get IsDot(): boolean { return this.isDot; }
+    set IsDot(isDot: boolean) { this.isDot = isDot; }
 }

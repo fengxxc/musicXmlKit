@@ -23,7 +23,7 @@ export class Config {
         
         this.pageWidth = canvas.clientWidth;
         this.pageHeight = canvas.clientHeight;
-        this.paddingTop = 20;
+        this.paddingTop = 80;
         this.paddingRight = 10;
         this.paddingBottom = 20;
         this.paddingLeft = 10;
@@ -36,7 +36,7 @@ export class Config {
         this.stave5Height = this.lineSpace * 4;
         this.rowSpace = 60;
         this.measureNoFontHeight = 10;
-        this.singleDurationWidth = 58;
+        this.singleDurationWidth = 64;
         this.noteHeadAngle = 22;
     }
 
@@ -103,7 +103,6 @@ export class Config {
     public get StaveSpace() : number {
         return this.staveSpace;
     }
-    
     
     public get Stave5Height() : number {
         return this.stave5Height;
