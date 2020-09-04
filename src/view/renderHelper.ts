@@ -25,4 +25,38 @@ export default class RenderHelper {
         } // Get √
         return res;
     }
+
+
+    /**
+     * 计算：设4分音符长度为1，在一组连体音符中有多少个4分音符长度
+     * @static
+     * @param {number} beats 一小节有几拍
+     * @param {number} beatType 以几分音符为一拍
+     * @returns
+     * @memberof Render
+     */
+    static computeQuarterCountInSiamesed(beats: number, beatType: number) {
+        // const eighthCount: number = 8 / down * up;
+        if (beatType >= 8)
+            if (beats % 3 == 0) return 1.5;
+            else return 1;
+        else if (beatType >= 4)
+            return 1;
+        else
+            return 2;
+    }
+
+    /**
+     * 计算：音符有多少条尾巴(或者有多少条符杠)
+     * @static
+     * @param {boolean} isDot 是附点音符吗
+     * @param {number} duration 持续时间长度。我的理解是：该音符是几个dicisions，所以，dutation / dicisions的值，就是几个4分音符的时值长度
+     * @param {number} divisions 本小节每个4分音符的分割数。我的理解是：本小节时值最小的元素占一个四分音符的几分之一
+     * @returns
+     * @memberof RenderHelper
+     */
+    static computeTailCount(isDot: boolean, duration: number, divisions: number) {
+        const durationWithoutDot: number = isDot ? duration * 2 / 3 : duration;
+        return Math.log(0.5 / (durationWithoutDot / divisions)) / Math.log(2) + 1;
+    }
 }

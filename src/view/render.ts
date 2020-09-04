@@ -1,7 +1,6 @@
 import { Config } from "../config";
 import { Backup } from "../model/interface/backup";
 import { Note } from "../model/interface/note";
-import { NoteNode } from "../model/noteNode";
 import { RootNode } from "../model/rootNode";
 import { MxIterator } from "./mxIterator";
 import MxToken, { ClefToken } from "./mxToken";
@@ -9,9 +8,16 @@ import RectBound from "./rectBound";
 import RenderHelper from "./renderHelper";
 import { Shape } from "./shape";
 import NoteRenderInfo from "./noteRenderInfo";
+import Guide from "./guide";
 
 export class Render {
-    
+    /**
+     * 渲染乐谱执行入口
+     * @static
+     * @param {HTMLCanvasElement} canvasDom canvas的dom对象
+     * @param {RootNode} musicXmlNode 解析musicXml后的结构化对象
+     * @memberof Render
+     */
     static action(canvasDom: HTMLCanvasElement, musicXmlNode: RootNode): void {
         const cfg = new Config(canvasDom, musicXmlNode);
         const gu = new Guide(cfg);
@@ -75,9 +81,24 @@ export class Render {
         Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineSpace, cfg.LineColor);
     }
 
+    /**
+     * 完成本小节的所有符桿、符尾、符杠的渲染
+     * @private
+     * @static
+     * @param {NoteRenderInfo[]} noteRenderInfos  本小节的音符渲染信息
+     * @param {Shape} shape
+     * @param {number} beats
+     * @param {number} beatType
+     * @param {number} noteStemHeight
+     * @param {number} noteStemWidth
+     * @param {number} noteBeamWidth
+     * @param {number} lineSpace
+     * @param {string} colorHex
+     * @memberof Render
+     */
     private static completeRenderMeasureNotes(noteRenderInfos: NoteRenderInfo[], shape: Shape, beats: number, beatType: number, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, colorHex: string) {
         // 设4分音符长度为1，在一组连体音符中有多少个4分音符长度
-        const quarterCountInSiamesed: number = Render.computeQuarterCountInSiamesed(beats, beatType);
+        const quarterCountInSiamesed: number = RenderHelper.computeQuarterCountInSiamesed(beats, beatType);
         // console.log(quarterCountInSiamesed);
         let _start: number = 0, _end: number = 0;
         for (let i = 0; i < noteRenderInfos.length; i++) {
@@ -99,7 +120,7 @@ export class Render {
                     }
                     timeLen += tl;
                 }
-                Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1 shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, colorHex);
+                Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1 , shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, colorHex);
                 i = _end - 1;
             } else {
                 // timeLength == 1 是4分音符，timeLength > 1 是2分音符， 他们都有相同的符桿
@@ -113,6 +134,20 @@ export class Render {
         }
     }
 
+    /**
+     * 渲染符尾
+     * @private
+     * @static
+     * @param {Shape} shape
+     * @param {number} x
+     * @param {number} y
+     * @param {number} stemDire 符桿朝向 1 是下；-1是上
+     * @param {number} count 有几条符尾
+     * @param {number} lineSpace
+     * @param {string} colorHex
+     * @returns {RectBound}
+     * @memberof Render
+     */
     private static renderNoteTails(shape: Shape, x: number, y: number, stemDire: number, count: number, lineSpace: number, colorHex: string): RectBound {
         // shape.drawText(x, y, count+'', 20, '微软雅黑', '#000')
         for (let i = 0; i < count; i++) {
@@ -127,10 +162,10 @@ export class Render {
     }
 
     /**
-     *  渲染4分音符长度内的音符的符桿、符杠
+     * 渲染4分音符长度内的音符的符桿、符杠
      * @private
      * @static
-     * @param {NoteRenderInfo[]} noteRenderInfos
+     * @param {NoteRenderInfo[]} noteRenderInfos  本小节的音符渲染信息
      * @param {number} start   包括
      * @param {number} end     包括
      * @param {number} noteStemHeight
@@ -155,8 +190,7 @@ export class Render {
             shape.drawVerticalLine(nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y, stemHeight, noteStemWidth, colorHex);
             // noteRenderInfos.slice(start, end+1).map(n => shape.drawPoint(n.X, n.Y, 4, '#ff0', '#ff0') && console.log(n.Y))
             // 渲染符尾
-            const durationWithoutDot: number = nri.IsDot ? nri.Duration * 2 / 3 : nri.Duration;
-            const count: number = Math.log(0.5 / (durationWithoutDot / nri.Divisions)) / Math.log(2) + 1;
+            const count: number = RenderHelper.computeTailCount(nri.IsDot, nri.Duration, nri.Divisions);
             Render.renderNoteTails(shape, nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y+stemHeight, stemDire, count, lineSpace, colorHex);
             return;
         }
@@ -185,11 +219,23 @@ export class Render {
         for (; start < noteRenderInfos.length && start <= end; start++) {
             const noteInfo = noteRenderInfos[start];
             // console.log(noteInfo.PitchStep, noteInfo.PitchOctave, noteInfo.Duration / noteInfo.Divisions);
-
+            // TODO
         }
         // console.log('↑↑↑↑↑↑↑↑↑↑↑↑↑')
     }
 
+    /**
+     * 渲染一个音符前要做的事
+     * @private
+     * @static
+     * @param {Guide} gu
+     * @param {MxToken} token
+     * @param {Config} cfg
+     * @param {Shape} shape
+     * @param {NoteRenderInfo[]} noteRenderInfoTemp 本小节的音符渲染信息
+     * @returns {NoteRenderInfo[]} 本小节的音符渲染信息
+     * @memberof Render
+     */
     private static beforeRenderNote(gu: Guide, token: MxToken, cfg: Config, shape: Shape, noteRenderInfoTemp: NoteRenderInfo[]): NoteRenderInfo[] {
         const isNewRow: boolean = gu.isRowStart();
         // 如果是行开始...
@@ -261,7 +307,6 @@ export class Render {
 
     /**
      * 渲染音调符号 
-     *
      * @param {Shape} shape
      * @param {number} x
      * @param {number} y
@@ -342,12 +387,40 @@ export class Render {
         return new RectBound(pos.length * rb.Width, rb.Height + (Math.abs(fifths) - 1) * lineSpace);
     }
 
+    /**
+     * 渲染拍号
+     * @private
+     * @static
+     * @param {Shape} shape
+     * @param {number} x
+     * @param {number} y
+     * @param {number} timeBeatType 以几分音符为一拍
+     * @param {number} timeBeats 每小节有几拍
+     * @param {number} lineSpace
+     * @param {string} colorHex
+     * @returns {RectBound}
+     * @memberof Render
+     */
     private static renderTimeBeat(shape: Shape, x: number, y: number, timeBeatType: number, timeBeats: number, lineSpace: number, colorHex: string): RectBound {
         const rb: RectBound =shape.drawText(x, y, timeBeats+'', lineSpace * 2, 'Microsoft Yahei', colorHex);
         shape.drawText(x, y + lineSpace * 2, timeBeatType+'', lineSpace * 2, 'Microsoft Yahei', colorHex);
         return new RectBound(rb.Width, lineSpace * 4);
     }
 
+    /**
+     * 渲染休止符
+     * @private
+     * @static
+     * @param {Shape} shape
+     * @param {number} x
+     * @param {number} y
+     * @param {string} restType 休止符类型 二全: 'breve'; 全: 'whole'; 2分: 'half'; 4分: 'quarter'; 8分: 'eighth';
+     *                                   16分: '16th'; 32分: '32th'; 64分: '64th'; 128分: '128th';
+     * @param {number} lineSpace
+     * @param {string} colorHex
+     * @returns {RectBound}
+     * @memberof Render
+     */
     private static renderRestSign(shape: Shape, x: number, y: number, restType: string, lineSpace: number, colorHex: string): RectBound {
         switch (restType) {
             case 'quarter': // 四分休止符
@@ -358,88 +431,36 @@ export class Render {
                 return shape.drawRest_2(x, y + lineSpace * 1.5, lineSpace, colorHex);
             case 'whole': // 全休止符
                 return shape.drawRest_2(x, y + lineSpace * 1, lineSpace, colorHex);
-            case 'sixteenth': // 十六分休止符
+            case '16th': // 十六分休止符
                 return shape.drawRest_16(x, y + lineSpace * 2, lineSpace, colorHex);
             default: // TODO 其他分休止符 32、64等
                 return null;
         }
     }
 
+    /**
+     * 渲染符头
+     * @private
+     * @static
+     * @param {Shape} shape
+     * @param {number} x
+     * @param {number} y
+     * @param {string} noteType 符头类型:  二全: 'breve'; 全: 'whole'; 2分: 'half'; 4分: 'quarter'; 8分: 'eighth';
+     *                                   16分: '16th'; 32分: '32th'; 64分: '64th'; 128分: '128th';
+     * @param {number} lineSpace
+     * @param {number} noteHeadAngle
+     * @param {number} lineWidth
+     * @param {string} fillColorHex
+     * @param {string} strokeColorHex
+     * @returns {RectBound}
+     * @memberof Render
+     */
     private static renderNoteHeader(shape: Shape, x: number, y: number, noteType: string, lineSpace: number, noteHeadAngle: number, lineWidth: number, fillColorHex: string, strokeColorHex: string): RectBound {
-        if (noteType == 'breve' || noteType == 'whole' || noteType =='half') {
+        if (noteType == 'breve' || noteType == 'whole' || noteType =='half') { // 空心头
             return shape.drawNoteHead(x, y, lineSpace, noteHeadAngle, lineWidth, 'transparent', strokeColorHex, lineWidth * 3/2); // 符头描边宽度先偷个懒 _(:з)∠)_
-        } else {
+        } else { // 实心头
             return shape.drawNoteHead(x, y, lineSpace, noteHeadAngle, lineWidth, fillColorHex, strokeColorHex, 0);
         }
     }
 
-    /**
-     * 计算：设4分音符长度为1，在一组连体音符中有多少个4分音符长度
-     * @static
-     * @param {number} beats 一小节有几拍
-     * @param {number} beatType 以几分音符为一拍
-     * @returns
-     * @memberof Render
-     */
-    private static computeQuarterCountInSiamesed(beats: number, beatType: number) {
-        // const eighthCount: number = 8 / down * up;
-        if (beatType >= 8)
-            if (beats % 3 == 0) return 1.5;
-            else return 1;
-        else if (beatType >= 4)
-            return 1;
-        else
-            return 2;
-    }
-}
-
-class Guide {
-    
-    private oX: number;
-    private oY: number;
-    private cfg: Config;
-    private curMeasureHeight: number;
-    constructor(cfg: Config) {
-        this.cfg = cfg;
-        this.oX = cfg.PaddingLeft + 0.5;
-        this.oY = cfg.PaddingTop + 0.5;
-    }
-    
-    public get X() : number {
-        return this.oX;
-    }
-    
-    /**
-     * 获取y轴坐标
-     * @param staff 在从上往下数第几个线谱上
-     */
-    public Y(staff: number) : number {
-        return this.oY + (staff - 1) * (this.cfg.StaveSpace + this.cfg.Stave5Height);
-    }
-    
-    public isRowStart(): boolean {
-        return this.oX === this.cfg.PaddingLeft + 0.5;
-    }
-
-    /**
-     * 去下一个要绘制的图形原点
-     */
-    public stepAhead(xLength: number): void {
-        if (this.oX + xLength >= this.cfg.PaddingLeft + this.cfg.ContentWidth) {
-            // 去下一行起始处
-            this.oX = this.cfg.PaddingLeft + 0.5;
-            this.oY += this.curMeasureHeight + this.cfg.RowSpave;
-        } else {
-            this.oX += Math.round(xLength);
-        }
-    }
-
-    public set CurMeasureHeight(height : number) {
-        this.curMeasureHeight = height;
-    }
-
-    
-    public get CurMeasureHeight() : number {
-        return this.curMeasureHeight;
-    }
 }
