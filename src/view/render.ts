@@ -78,7 +78,7 @@ export class Render {
             }
             // TODO
         }
-        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineSpace, cfg.LineColor);
+        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.LineColor);
     }
 
     /**
@@ -120,7 +120,7 @@ export class Render {
                     }
                     timeLen += tl;
                 }
-                Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1 , shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, colorHex);
+                Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1 , shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, 6, colorHex);
                 i = _end - 1;
             } else {
                 // timeLength == 1 是4分音符，timeLength > 1 是2分音符， 他们都有相同的符桿
@@ -171,11 +171,11 @@ export class Render {
      * @param {number} noteStemHeight
      * @param {number} noteStemWidth
      * @param {number} noteBeamWidth
+     * @param {number} singleBeamLength
      * @param {string} colorHex
      * @memberof Render
      */
-    private static renderSiamesedNotes(noteRenderInfos: NoteRenderInfo[], start: number, end: number, shape: Shape, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, colorHex: string) {
-        // console.log(noteRenderInfos[start].MeasureNo + ' ↓↓↓↓↓↓↓↓↓↓↓↓↓')
+    private static renderSiamesedNotes(noteRenderInfos: NoteRenderInfo[], start: number, end: number, shape: Shape, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, singleBeamLength: number, colorHex: string) {
         // 符桿朝上吗？1 是下；-1是上
         const stemDire: number = noteRenderInfos[start].Stem == 'up' ? -1 : 1;
 
@@ -183,12 +183,10 @@ export class Render {
         if (start == end || noteRenderInfos[end].X - noteRenderInfos[start].X == 0) {
             const nri: NoteRenderInfo = noteRenderInfos[start];
             const y = ( () => Math.min( ...noteRenderInfos.slice(start, end+1).map(n => n.Y * stemDire) ) * stemDire )();
-            // console.log(y)
             // 渲染符桿
             // 符桿长度
             const stemHeight: number = (noteStemHeight + Math.abs(noteRenderInfos[end].Y - noteRenderInfos[start].Y)) * (stemDire);
             shape.drawVerticalLine(nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y, stemHeight, noteStemWidth, colorHex);
-            // noteRenderInfos.slice(start, end+1).map(n => shape.drawPoint(n.X, n.Y, 4, '#ff0', '#ff0') && console.log(n.Y))
             // 渲染符尾
             const count: number = RenderHelper.computeTailCount(nri.IsDot, nri.Duration, nri.Divisions);
             Render.renderNoteTails(shape, nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y+stemHeight, stemDire, count, lineSpace, colorHex);
@@ -197,31 +195,67 @@ export class Render {
 
         // 符杠倾斜角度的正切值
         const tan = (noteRenderInfos[end].Y - noteRenderInfos[start].Y) / (noteRenderInfos[end].X - noteRenderInfos[start].X);
-        const startTailY: number = (() => {
+        // 初始符杠基准点Y
+        let baseTailY: number = (() => {
             let high: NoteRenderInfo= noteRenderInfos[start];
             let low: NoteRenderInfo= noteRenderInfos[start];
             // 符桿朝上就取最高的，朝下就取最低的
             for (let i = start + 1; i <= end; i++) {
                 const nri: NoteRenderInfo = noteRenderInfos[i];
-                if (nri.Y > low.Y) {
-                    low = nri;
-                }
-                if (nri.Y < high.Y) {
-                    high = nri;
-                }
+                if (nri.Y > low.Y) low = nri;
+                if (nri.Y < high.Y) high = nri;
             }
             const target: NoteRenderInfo = stemDire == -1 ? high : low;
-            shape.drawPoint(target.X, target.Y, 1, '#0f0', '#0f0');
             return target.Y - (target.X - noteRenderInfos[start].X) * tan + (noteStemHeight * stemDire);
         })();
-        shape.drawPoint(noteRenderInfos[start].X, startTailY, 2, '#00f', '#00f');
+        const noteHeadOffsetX = Math.floor(noteRenderInfos[start].HeadWidth / 2) * (-stemDire);
+        // 初始符杠基准点X
+        let baseTailX: number = noteRenderInfos[start].X + noteHeadOffsetX;
+        // shape.drawPoint(baseTailX, baseTailY, 2, '#00f', '#00f'); // test
 
-        for (; start < noteRenderInfos.length && start <= end; start++) {
-            const noteInfo = noteRenderInfos[start];
-            // console.log(noteInfo.PitchStep, noteInfo.PitchOctave, noteInfo.Duration / noteInfo.Divisions);
-            // TODO
+        const [_start, firstNoteInfo]: [number,NoteRenderInfo] = RenderHelper.mergeChordNoteRenderInfo(start, end, noteRenderInfos, stemDire);
+        let prevprev: NoteRenderInfo = null;
+        let prev: NoteRenderInfo = firstNoteInfo;
+        for (let i = _start + 1; i < noteRenderInfos.length + 1 && i <= end + 1; i++) {
+            let self: NoteRenderInfo = null;
+            /* 多个和弦音处理成一个，最后一个用没有实际意义的虚拟音占位 */
+            [i, self] = (i != end + 1) ? RenderHelper.mergeChordNoteRenderInfo(i, end, noteRenderInfos, stemDire) 
+                                       : [i, new NoteRenderInfo(-1, false, false, prev.Divisions, 0, '', 0, 0, 0, 0, '', 0, false)];
+
+            const prevBeamCount: number = RenderHelper.computeTailCount(prev.IsDot, prev.Duration, prev.Divisions);
+            const selfBeamCount: number = RenderHelper.computeTailCount(self.IsDot, self.Duration, self.Divisions);
+            const commBeamCount: number = Math.min(prevBeamCount, selfBeamCount);
+            let _y = baseTailY;
+
+            /* 渲染前一个音符的符桿 */
+            shape.drawLine(baseTailX, prev.Y, baseTailX, baseTailY, noteStemWidth, colorHex);
+
+            /* 渲染当前和前一个公共的符杠 */
+            for (let c = 0; c < commBeamCount; c++, _y += noteBeamWidth * 2 * (-stemDire)) {
+                shape.drawLine(baseTailX, _y, self.X + noteHeadOffsetX, _y + (self.X + noteHeadOffsetX - baseTailX) * tan, noteBeamWidth, colorHex)
+                // shape.drawPoint(baseTailX, _y, 2, '#00f', '#00f'); // test
+            }
+
+            /* 渲染前一个不相连的符杠 */
+            // beamDire: 朝向哪里，1朝右，-1朝左, singleBeamCount: 代表前一个不相连的符杠有几条，overBeamCount: 代表应该跳过几条符杠
+            const [beamDire, singleBeamCount, overBeamCount]: number[] = ((): number[] => {
+                if (i == _start + 1) 
+                    return [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
+                const prevprevBeamCount = RenderHelper.computeTailCount(prevprev.IsDot, prevprev.Duration, prevprev.Divisions);
+                return (prevprevBeamCount >= selfBeamCount) ? [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
+            })();
+            for (let v = 0; v < overBeamCount; v++) // 跳过的符杠
+                _y += noteBeamWidth * 2 * (-stemDire);
+            for (let s = 0; s < singleBeamCount; s++, _y += noteBeamWidth * 2 * (-stemDire)) {
+                shape.drawLine(baseTailX, _y, baseTailX + singleBeamLength * beamDire, _y + singleBeamLength * tan * beamDire, noteBeamWidth, colorHex);
+            }
+
+            /* 符杠基准点置为当前音符的 */
+            baseTailY = baseTailY + (self.X + noteHeadOffsetX - baseTailX) * tan;
+            baseTailX = self.X + noteHeadOffsetX;
+            prevprev = prev;
+            prev = self;
         }
-        // console.log('↑↑↑↑↑↑↑↑↑↑↑↑↑')
     }
 
     /**
@@ -266,7 +300,7 @@ export class Render {
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;
         if (lastNoteInfo == null || token.MeasureNo != lastNoteInfo.MeasureNo) {
             // 画小节内符桿、符尾、符杠
-            Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 2, cfg.LineSpace, cfg.LineColor);
+            Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.LineColor);
             noteRenderInfoTemp = [];
             if (!isNewRow) {
                 token.Clefs.forEach(c => {

@@ -3,7 +3,7 @@
 <score-partwise version="2.0">
  <identification>
   <encoding>
-   <encoding-date>2020-09-03</encoding-date>
+   <encoding-date>2020-09-04</encoding-date>
    <software>Guitar Pro 7.5.0</software>
   </encoding>
  </identification>
@@ -502,9 +502,9 @@
      <alter>1</alter>
      <octave>4</octave>
     </pitch>
-    <duration>2</duration>
+    <duration>1</duration>
     <voice>1</voice>
-    <type>16th</type>
+    <type>32nd</type>
     <stem>up</stem>
     <notehead>normal</notehead>
     <staff>1</staff>
@@ -523,9 +523,9 @@
      <alter>1</alter>
      <octave>4</octave>
     </pitch>
-    <duration>1</duration>
+    <duration>2</duration>
     <voice>1</voice>
-    <type>32nd</type>
+    <type>16th</type>
     <stem>up</stem>
     <notehead>normal</notehead>
     <staff>1</staff>
@@ -545,9 +545,9 @@
      <alter>1</alter>
      <octave>5</octave>
     </pitch>
-    <duration>1</duration>
+    <duration>2</duration>
     <voice>1</voice>
-    <type>32nd</type>
+    <type>16th</type>
     <stem>up</stem>
     <notehead>normal</notehead>
     <staff>1</staff>
