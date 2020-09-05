@@ -39,7 +39,7 @@
     "musicxml"
   ],
   "author": "fengxxc",
-  "license": "MIT",
+  "license": "BSD 3-Clause",
   "bugs": {
     "url": "https://github.com/fengxxc/musicXmlKit/issues"
   },
