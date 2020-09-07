@@ -61,16 +61,17 @@ export class Render {
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
                 const backDistance = (() => {
-                    let realDuration: number = 0;
+                    let res = 0;
                     let backupDuration: number = backup.Duration();
                     for (let i = noteRenderInfoTemp.length - 1; i >= 0; i--) {
                         const noteRenderInfo: NoteRenderInfo = noteRenderInfoTemp[i];
-                        const noteDuration: number = noteRenderInfo.Duration;
-                        backupDuration -= noteDuration;
-                        if (!noteRenderInfo.IsChord) realDuration += noteDuration;
-                        if (backupDuration <= 0) break;
+                        backupDuration -= noteRenderInfo.Duration;
+                        if (backupDuration <= 0) {
+                            res =  gu.X - noteRenderInfo.X;
+                            break;
+                        }
                     }
-                    return realDuration / token.Divisions * cfg.SingleDurationWidth;
+                    return res;
                 })();
                 gu.stepAhead(-backDistance);
             } else if (token.SpiritType == 'direction') {
