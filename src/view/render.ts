@@ -37,10 +37,10 @@ export class Render {
                 // 开始渲染音符和他的朋友们
                 const note: Note = <Note>token.Spirit;
                 let _y = gu.Y(note.Staff());
-                let noteHeadRectBound: RectBound = new RectBound(0, 0);
+                let noteRectBound: RectBound = new RectBound(0, 0);
                 if (note.Rest()) {
                     // 画休止符
-                    Render.renderRestSign(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.LineColor);
+                    noteRectBound = Render.renderRestSign(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.LineColor);
                 } else {
                     // 画音符
                     const clefToken: ClefToken = token.getClefByNumber(note.Staff());
@@ -48,16 +48,16 @@ export class Render {
                     _y += (cfg.LineSpace * 5) - (line * cfg.LineSpace);
                     // 画符头
                     if (note.Chord()) { // 和弦音在x轴不前进，固退回
-                        gu.stepAhead(-(note.Duration() / token.Divisions * cfg.SingleDurationWidth));
+                        gu.stepAhead(-(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRenderInfoTemp[noteRenderInfoTemp.length-1].HeadWidth));
                     }
-                    noteHeadRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
+                    noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
                     // 画符点
                     if (note.Dot()) {
-                        shape.drawPoint(gu.X + noteHeadRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
+                        shape.drawPoint(gu.X + noteRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
                     }
                 }
-                noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteHeadRectBound.Width, note.Stem(), note.Staff(), note.Dot()) );
-                gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth);
+                noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteRectBound.Width, note.Stem(), note.Staff(), note.Dot()) );
+                gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRectBound.Width);
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
                 const backDistance = (() => {
