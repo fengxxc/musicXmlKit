@@ -120,7 +120,7 @@ export class Render {
                     }
                     timeLen += tl;
                 }
-                Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1 , shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, 6, colorHex);
+                Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1 , shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, colorHex);
                 i = _end - 1;
             } else {
                 // timeLength == 1 是4分音符，timeLength > 1 是2分音符， 他们都有相同的符桿
