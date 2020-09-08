@@ -754,6 +754,26 @@
     </notations>
    </note>
    <note>
+    <chord/>
+    <pitch>
+     <step>B</step>
+     <octave>3</octave>
+    </pitch>
+    <duration>4</duration>
+    <voice>5</voice>
+    <type>eighth</type>
+    <stem>up</stem>
+    <notehead>normal</notehead>
+    <staff>2</staff>
+    <beam number="1">continue</beam>
+    <notations>
+     <technical>
+      <string>3</string>
+      <fret>26</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
     <pitch>
      <step>D</step>
      <alter>1</alter>

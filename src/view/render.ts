@@ -245,7 +245,7 @@ export class Render {
             const [beamDire, singleBeamCount, overBeamCount]: number[] = ((): number[] => {
                 if (i == _start + 1) 
                     return [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
-                const prevprevBeamCount = RenderHelper.computeTailCount(prevprev.IsDot, prevprev.Duration, prevprev.Divisions);
+                const prevprevBeamCount = prevprev != null ? RenderHelper.computeTailCount(prevprev.IsDot, prevprev.Duration, prevprev.Divisions) : 0;
                 return (prevprevBeamCount >= selfBeamCount) ? [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
             })();
             for (let v = 0; v < overBeamCount; v++) // 跳过的符杠
