@@ -32,7 +32,7 @@ export class Config {
         this.lineColor = "#000";
         this.rowLeftPadding = 15;
         this.measureLeftPadding = this.lineSpace * 2;
-        this.staveSpace = 40;
+        this.staveSpace = 70;
         this.stave5Height = this.lineSpace * 4;
         this.rowSpace = 60;
         this.measureNoFontHeight = 10;

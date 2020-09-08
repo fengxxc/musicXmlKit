@@ -453,10 +453,23 @@ export class Shape {
         return this.draw(Shape.Line(x1, y1, x2, y2, lineWidth, colorHex));
     }
 
-    drawMultiHorizontalLine(x: number, y: number, length: number, lineWidth: number, colorHex: string, count: number, lineSpace: number): RectBound[] {
+    /**
+     * 画多条水平线
+     * @param {number} x
+     * @param {number} y
+     * @param {number} length
+     * @param {number} lineWidth
+     * @param {string} colorHex
+     * @param {number} count
+     * @param {number} iterateDirection 迭代方向: 1是下；-1是上
+     * @param {number} lineSpace
+     * @returns {RectBound[]}
+     * @memberof Shape
+     */
+    drawMultiHorizontalLine(x: number, y: number, length: number, lineWidth: number, colorHex: string, count: number, iterateDirection: number, lineSpace: number): RectBound[] {
         let arr: RectBound[] = [];
         for (let i = 0; i < count; i++) {
-            arr.push(this.drawLine(x, y + i * lineSpace, x + length, y + i * lineSpace, lineWidth, colorHex));
+            arr.push(this.drawLine(x, y + i * lineSpace * iterateDirection, x + length, y + i * lineSpace * iterateDirection, lineWidth, colorHex));
         }
         return arr;
     }

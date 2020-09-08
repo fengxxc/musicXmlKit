@@ -46,15 +46,18 @@ export class Render {
                     const clefToken: ClefToken = token.getClefByNumber(note.Staff());
                     const line: number = RenderHelper.getLineByPitchSign(note.PitchStep(), note.PitchOctave(), clefToken.Sign, clefToken.Line);
                     _y += (cfg.LineSpace * 5) - (line * cfg.LineSpace);
-                    // 画符头
+                    // 如果是和弦音，保证横坐标方向上跟上个音符一样
                     if (note.Chord()) { // 和弦音在x轴不前进，固退回
                         gu.stepAhead(-(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRenderInfoTemp[noteRenderInfoTemp.length-1].HeadWidth));
                     }
+                    // 画符头
                     noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
                     // 画符点
                     if (note.Dot()) {
                         shape.drawPoint(gu.X + noteRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
                     }
+                    // 画加线（如果有的话）
+                    Render.renderAddLine(shape, gu.X, _y, line, cfg.LineSpace, noteRectBound.Width * 3 / 2, cfg.LineWidth, cfg.LineColor);
                 }
                 noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteRectBound.Width, note.Stem(), note.Staff(), note.Dot()) );
                 gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRectBound.Width);
@@ -283,7 +286,7 @@ export class Render {
                 let _x = gu.X;
                 const _y: number = gu.Y(c.Number);
                 // 画五线谱 TODO 多声部
-                shape.drawMultiHorizontalLine(_x, _y, cfg.ContentWidth, cfg.LineWidth, cfg.LineColor, 5, cfg.LineSpace);
+                shape.drawMultiHorizontalLine(_x, _y, cfg.ContentWidth, cfg.LineWidth, cfg.LineColor, 5, 1 , cfg.LineSpace);
                 // 画谱号
                 const cRb: RectBound = Render.renderClefSign(shape, c.Sign, _x += cfg.RowLeftPadding, _y + cfg.Stave5Height - (c.Line - 1) * cfg.LineSpace, cfg.LineSpace);
                 // gu.stepAhead(rb.Width);
@@ -498,4 +501,31 @@ export class Render {
         }
     }
 
+    /**
+     * 渲染加线，根据音符位置
+     * @private
+     * @static
+     * @param {Shape} shape
+     * @param {number} x 音符坐标原点x
+     * @param {number} y 音符坐标原点y
+     * @param {number} line 在第几条线上
+     * @param {number} lineSpace
+     * @param {number} lineLength
+     * @param {number} lineWidth
+     * @param {string} fillColorHex
+     * @memberof Render
+     */
+    private static renderAddLine(shape: Shape, x: number, y: number, line: number, lineSpace: number, lineLength: number, lineWidth: number, fillColorHex: string) {
+        const addLineCount: number = (() => {
+            if (line <= 0)      return Math.floor(-line) + 1;
+            else if (6 <= line) return Math.floor(line - 5);
+            else                return 0;
+        })();
+        if (addLineCount != 0) {
+            const addLineDire: number = line == 0 ? 1 : line / Math.abs(line); // 加线迭代方向: 1是下；-1是上
+            const addLineY: number = (Math.abs(line) % 1 > 0) ? y + addLineDire * 0.5 * lineSpace : y;
+            const addLineX: number = x - lineLength / 2;
+            shape.drawMultiHorizontalLine(addLineX, addLineY, lineLength, lineWidth, fillColorHex, addLineCount, addLineDire, lineSpace);
+        }
+    }
 }
