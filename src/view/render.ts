@@ -114,10 +114,11 @@ export class Render {
                 _end = _start;
                 for (let timeLen = 0; _end < noteRenderInfos.length; _end++) {
                     const nri: NoteRenderInfo = noteRenderInfos[_end];
-                    if (nri.IsRest) break;
-                    if (_end > _start && nri.Staff != noteRenderInfos[_end - 1].Staff) {
-                        break;
-                    }
+                    if (
+                        nri.IsRest
+                        || _end > _start && nri.Staff != noteRenderInfos[_end - 1].Staff
+                        || nri.Duration / nri.Divisions >= 1
+                    ) break;
                     const tl = nri.IsChord ? 0 : nri.Duration / nri.Divisions
                     if (timeLen + tl > quarterCountInSiamesed) {
                         break;
@@ -128,12 +129,9 @@ export class Render {
                 i = _end - 1;
             } else {
                 // timeLength == 1 是4分音符，timeLength > 1 是2分音符， 他们都有相同的符桿
-                // 画符桿和符尾
-                if (noteInfo.Stem == 'down') {
-                    shape.drawVerticalLine(noteInfo.X - Math.floor(noteInfo.HeadWidth / 2), noteInfo.Y, noteStemHeight, noteStemWidth, colorHex);
-                } else {
-                    shape.drawVerticalLine(noteInfo.X + Math.floor(noteInfo.HeadWidth / 2), noteInfo.Y, -noteStemHeight, noteStemWidth, colorHex);
-                }
+                // 画符桿
+                const stemDire: number = noteInfo.Stem == 'down' ? 1 : -1;
+                shape.drawVerticalLine(noteInfo.X - Math.floor(noteInfo.HeadWidth / 2) * stemDire, noteInfo.Y, noteStemHeight * stemDire, noteStemWidth, colorHex);
             }
         }
     }
@@ -153,12 +151,11 @@ export class Render {
      * @memberof Render
      */
     private static renderNoteTails(shape: Shape, x: number, y: number, stemDire: number, count: number, lineSpace: number, colorHex: string): RectBound {
-        // shape.drawText(x, y, count+'', 20, '微软雅黑', '#000')
         for (let i = 0; i < count; i++) {
             if (stemDire == -1) {
-                shape.drawNoteTail(x, y - stemDire * lineSpace*2 * i, lineSpace, colorHex);
+                shape.drawNoteTail(x, y - stemDire * lineSpace * i, lineSpace, colorHex);
             } else {
-                shape.drawNoteTailFlip(x, y - stemDire * lineSpace*2 * i,lineSpace, colorHex);
+                shape.drawNoteTailFlip(x, y - stemDire * lineSpace * i,lineSpace, colorHex);
             }
             
         }
