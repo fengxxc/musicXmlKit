@@ -18,6 +18,7 @@ export class Config {
     private measureNoFontHeight: number; // 小节号文字高度
     private singleDurationWidth: number; // 一拍在线谱上的宽度
     private noteHeadAngle: number; // 符头旋转角度
+    private noteBeamSlopeFactor: number; // 符杠倾斜系数 0~1
 
     constructor(canvas: HTMLElement, musicXmlNode: RootNode) {
         
@@ -38,6 +39,7 @@ export class Config {
         this.measureNoFontHeight = 10;
         this.singleDurationWidth = 56;
         this.noteHeadAngle = 22;
+        this.noteBeamSlopeFactor = 0.5; // 符杠倾斜系数 0~，默认0.5
     }
 
     
@@ -123,4 +125,16 @@ export class Config {
     public get NoteHeadAngle() : number {
         return this.noteHeadAngle;
     }
+
+    /**
+     * 符杠倾斜系数 0~1
+     * 数值越小，符杠越平
+     * @readonly
+     * @type {number}
+     * @memberof Config
+     */
+    public get NoteBeamSlopeFactor() : number {
+        return this.noteBeamSlopeFactor;
+    }
+    
 }
