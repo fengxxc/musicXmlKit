@@ -19,6 +19,7 @@ export class Config {
     private singleDurationWidth: number; // 一拍在线谱上的宽度
     private noteHeadAngle: number; // 符头旋转角度
     private noteBeamSlopeFactor: number; // 符杠倾斜系数 0~1
+    private beamInfoFrom: string; // 符杠连接信息来自于 musicxml | auto
 
     constructor(canvas: HTMLElement, musicXmlNode: RootNode) {
         
@@ -40,6 +41,7 @@ export class Config {
         this.singleDurationWidth = 56;
         this.noteHeadAngle = 22;
         this.noteBeamSlopeFactor = 0.5; // 符杠倾斜系数 0~，默认0.5
+        this.beamInfoFrom = 'musicxml';
     }
 
     
@@ -136,5 +138,14 @@ export class Config {
     public get NoteBeamSlopeFactor() : number {
         return this.noteBeamSlopeFactor;
     }
-    
+
+    /**
+     * 符杠连接信息来自于 musicxml | auto
+     * @readonly
+     * @type {string}
+     * @memberof Config
+     */
+    public get BeamInfoFrom() : string {
+        return this.beamInfoFrom;
+    }
 }

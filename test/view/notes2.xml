@@ -3,7 +3,7 @@
 <score-partwise version="2.0">
  <identification>
   <encoding>
-   <encoding-date>2020-09-08</encoding-date>
+   <encoding-date>2020-09-13</encoding-date>
    <software>Guitar Pro 7.5.0</software>
   </encoding>
  </identification>
@@ -331,6 +331,26 @@
     </notations>
    </note>
    <note>
+    <chord/>
+    <pitch>
+     <step>D</step>
+     <alter>1</alter>
+     <octave>5</octave>
+    </pitch>
+    <duration>4</duration>
+    <voice>1</voice>
+    <type>quarter</type>
+    <stem>up</stem>
+    <notehead>normal</notehead>
+    <staff>1</staff>
+    <notations>
+     <technical>
+      <string>1</string>
+      <fret>11</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
     <pitch>
      <step>B</step>
      <octave>4</octave>
@@ -371,7 +391,7 @@
     </notations>
    </note>
    <backup>
-    <duration>17</duration>
+    <duration>21</duration>
    </backup>
    <note>
     <pitch>

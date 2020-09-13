@@ -107,4 +107,6 @@ export interface Note extends Durational {
      * @memberof Note
      */
     Dot() : boolean;
+
+    Beams() : string[];
 }

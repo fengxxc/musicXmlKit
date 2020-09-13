@@ -112,4 +112,13 @@ export class NoteNode extends Node implements Note {
     Dot(): boolean {
         return super.getChildNodesByName('dot').length != 0;
     }
+
+    Beams(): string[] {
+        const bs: Node[] = super.getChildNodesByName('beam');
+        if (bs.length == 0) {
+            return null;
+        }
+        // const number: number = parseInt(super.getAttr()['number']);
+        return bs.map(b => b.getFullText());
+    }
 }

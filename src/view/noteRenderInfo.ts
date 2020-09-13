@@ -38,7 +38,10 @@ export default class NoteRenderInfo {
     // 是否是附点音符
     private isDot: boolean;
 
-    constructor(measureNo: number, isRest: boolean, isChord: boolean, divisions: number, duration: number, pitchStep: string, pitchOctave: number, x: number, y: number, headWidth: number, stem: string, staff: number, isDot: boolean) {
+    // 符杠 0: 没有符杠, 1: 符杠开始, 2: 符杠结束
+    private beamType: number;
+
+    constructor(measureNo: number, isRest: boolean, isChord: boolean, divisions: number, duration: number, pitchStep: string, pitchOctave: number, x: number, y: number, headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]) {
         this.measureNo = measureNo;
         this.isRest = isRest;
         this.isChord = isChord;
@@ -52,6 +55,11 @@ export default class NoteRenderInfo {
         this.stem = stem;
         this.staff = staff;
         this.isDot = isDot;
+        this.beamType = 0;
+        if (beams != null && beams.length > 0) {
+            if      (beams[0] == 'begin') this.beamType = 1;
+            else if (beams[0] == 'end'  ) this.beamType = 2;
+        }
     }
     get MeasureNo(): number { return this.measureNo; }
     set MeasureNo(measureNo: number) { this.measureNo = measureNo; }
@@ -79,4 +87,6 @@ export default class NoteRenderInfo {
     set Staff(staff: number) { this.staff = staff; }
     get IsDot(): boolean { return this.isDot; }
     set IsDot(isDot: boolean) { this.isDot = isDot; }
+    get BeamType(): number { return this.beamType; }
+    set BeamType(beamType: number) { this.beamType = beamType; }
 }

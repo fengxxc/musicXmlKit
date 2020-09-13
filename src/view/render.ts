@@ -59,7 +59,7 @@ export class Render {
                     // 画加线（如果有的话）
                     Render.renderAddLine(shape, gu.X, _y, line, cfg.LineSpace, noteRectBound.Width * 3 / 2, cfg.LineWidth, cfg.LineColor);
                 }
-                noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteRectBound.Width, note.Stem(), note.Staff(), note.Dot()) );
+                noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteRectBound.Width, note.Stem(), note.Staff(), note.Dot(), note.Beams()) );
                 gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRectBound.Width);
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
@@ -82,7 +82,7 @@ export class Render {
             }
             // TODO
         }
-        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.LineColor);
+        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor);
     }
 
     /**
@@ -98,10 +98,11 @@ export class Render {
      * @param {number} noteBeamWidth
      * @param {number} lineSpace
      * @param {number} noteBeamSlopeFactor
+     * @param {string} beamInfoFrom // 符杠连接信息来自于 musicxml | auto
      * @param {string} colorHex
      * @memberof Render
      */
-    private static completeRenderMeasureNotes(noteRenderInfos: NoteRenderInfo[], shape: Shape, beats: number, beatType: number, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, noteBeamSlopeFactor: number, colorHex: string) {
+    private static completeRenderMeasureNotes(noteRenderInfos: NoteRenderInfo[], shape: Shape, beats: number, beatType: number, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, noteBeamSlopeFactor: number, beamInfoFrom: string, colorHex: string) {
         // 设4分音符长度为1，在一组连体音符中有多少个4分音符长度
         const quarterCountInSiamesed: number = RenderHelper.computeQuarterCountInSiamesed(beats, beatType);
         // console.log(quarterCountInSiamesed);
@@ -109,31 +110,52 @@ export class Render {
         for (let i = 0; i < noteRenderInfos.length; i++) {
             const noteInfo: NoteRenderInfo = noteRenderInfos[i];
             if (noteInfo.IsRest) continue;
-            const timeLength = noteInfo.Duration / noteInfo.Divisions;
-            if (timeLength < 1) {
-                _start = i;
-                _end = _start;
-                for (let timeLen = 0; _end < noteRenderInfos.length; _end++) {
-                    const nri: NoteRenderInfo = noteRenderInfos[_end];
-                    if (
-                        nri.IsRest
-                        || _end > _start && nri.Staff != noteRenderInfos[_end - 1].Staff
-                        || nri.Duration / nri.Divisions >= 1
-                    ) break;
-                    const tl = nri.IsChord ? 0 : nri.Duration / nri.Divisions
-                    if (timeLen + tl > quarterCountInSiamesed) {
-                        break;
+
+            // 根据musicXml里的beam标签划分相连的符杠
+            if (beamInfoFrom == 'musicxml') {
+                if (noteInfo.BeamType == 1) {
+                    // shape.drawPoint(noteInfo.X, noteInfo.Y, 2, '#0f0', '#0f0')
+                    _start = _end = i;
+                    for (; _end < noteRenderInfos.length; _end++) {
+                        const nri: NoteRenderInfo = noteRenderInfos[_end];
+                        if (
+                            ( nri.BeamType == 2 && _end == noteRenderInfos.length - 1 )
+                            || ( nri.BeamType == 2 && (noteRenderInfos[_end+1] && noteRenderInfos[_end+1].BeamType != 2) )
+                        ) break;
                     }
-                    timeLen += tl;
+                    Render.renderSiamesedNotes(noteRenderInfos, _start, _end, shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, colorHex);
+                    i = _end;
+                    continue;
                 }
-                Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1, shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, colorHex);
-                i = _end - 1;
-            } else {
-                // timeLength == 1 是4分音符，timeLength > 1 是2分音符， 他们都有相同的符桿
-                // 画符桿
-                const stemDire: number = noteInfo.Stem == 'down' ? 1 : -1;
-                shape.drawVerticalLine(noteInfo.X - Math.floor(noteInfo.HeadWidth / 2) * stemDire, noteInfo.Y, noteStemHeight * stemDire, noteStemWidth, colorHex);
+            } 
+            // 根据拍号划分相连的符杠
+            else {
+                if (noteInfo.Duration / noteInfo.Divisions < 1) {
+                    _start = _end = i;
+                    for (let timeLen = 0; _end < noteRenderInfos.length; _end++) {
+                        const nri: NoteRenderInfo = noteRenderInfos[_end];
+                        if (
+                            nri.IsRest
+                            || _end > _start && nri.Staff != noteRenderInfos[_end - 1].Staff
+                            || nri.Duration / nri.Divisions >= 1
+                        ) break;
+                        const tl = nri.IsChord ? 0 : nri.Duration / nri.Divisions
+                        if (timeLen + tl > quarterCountInSiamesed)
+                            break;
+                        timeLen += tl;
+                    }
+                    Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1, shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, colorHex);
+                    i = _end - 1;
+                    continue;
+                }
             }
+            // 渲染没有符杠（可能有符尾）的音符或和弦音
+            _start = _end = i;
+            for (; _end < noteRenderInfos.length; _end++)
+                if ( _end == noteRenderInfos.length - 1 || !noteRenderInfos[_end + 1].IsChord) 
+                    break;
+            Render.renderSiamesedNotes(noteRenderInfos, _start, _end, shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, colorHex);
+            i = _end;
         }
     }
 
@@ -223,7 +245,7 @@ export class Render {
             let self: NoteRenderInfo = null;
             /* 多个和弦音处理成一个，最后一个用没有实际意义的虚拟音占位 */
             [i, self] = (i != end + 1) ? RenderHelper.mergeChordNoteRenderInfo(i, end, noteRenderInfos, stemDire) 
-                                       : [i, new NoteRenderInfo(-1, false, false, prev.Divisions, 0, '', 0, 0, 0, 0, '', 0, false)];
+                                       : [i, new NoteRenderInfo(-1, false, false, prev.Divisions, 0, '', 0, 0, 0, 0, '', 0, false, null)];
 
             const prevBeamCount: number = RenderHelper.computeTailCount(prev.IsDot, prev.Duration, prev.Divisions);
             const selfBeamCount: number = RenderHelper.computeTailCount(self.IsDot, self.Duration, self.Divisions);
@@ -303,7 +325,7 @@ export class Render {
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;
         if (lastNoteInfo == null || token.MeasureNo != lastNoteInfo.MeasureNo) {
             // 画小节内符桿、符尾、符杠
-            Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.LineColor);
+            Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor);
             noteRenderInfoTemp = [];
             if (!isNewRow) {
                 token.Clefs.forEach(c => {
