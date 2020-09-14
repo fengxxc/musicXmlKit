@@ -2,21 +2,11 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WebpackOnBuildPlugin = require('on-build-webpack')
 
-let tmpl = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>musicXml-test</title>
-    </head>
-    <body>
-        <canvas id="can" width="1000px" height="800px" style="outline: black 1px solid;"></canvas>
-    </body>
-    </html>
-`
-
 const buildDir = './test/view/built'
+
+function getTime() {
+    return new Date().toLocaleString('zh', { hour12: false });
+}
 
 module.exports = {
     entry: {
@@ -43,7 +33,8 @@ module.exports = {
 
     plugins: [
         new HtmlWebpackPlugin({
-            templateContent: ({htmlWebpackPlugin}) => tmpl,
+            title: 'shape-test',
+            template: './test/view/template/tmpl-canvas.html',
             filename: './shape.test.html',
             chunks: ['shape'],
             showErrors: true,
@@ -51,7 +42,8 @@ module.exports = {
             hash: true
         }),
         new HtmlWebpackPlugin({
-            templateContent: ({htmlWebpackPlugin}) => tmpl,
+            title: 'render-test',
+            template: './test/view/template/tmpl-canvas.html',
             filename: './render.test.html',
             chunks: ['render'],
             showErrors: true,
