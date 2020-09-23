@@ -26,13 +26,14 @@ export class Render {
         let entry = null;
         
         let noteRenderInfoTemp: NoteRenderInfo[] = [];
+        let measureAltersTemp: Record<string, number> = null;
         let token: MxToken = null;
         while (!(entry = iterator.next()).done) {
             token = entry.value;
             // console.log(token);
             if (token.SpiritType == 'note') {
                 // 做渲染音符之前应该做的事...
-                noteRenderInfoTemp = Render.beforeRenderNote(gu, token, cfg, shape, noteRenderInfoTemp);
+                [noteRenderInfoTemp, measureAltersTemp] = Render.beforeRenderNote(gu, token, cfg, shape, noteRenderInfoTemp, measureAltersTemp);
 
                 // 开始渲染音符和他的朋友们
                 const note: Note = <Note>token.Spirit;
@@ -52,6 +53,8 @@ export class Render {
                     }
                     // 画符头
                     noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
+                    // 画升降号（如果有的话）
+                    measureAltersTemp = Render.renderNoteAlter(measureAltersTemp, note, shape, gu, noteRectBound, _y, cfg);
                     // 画符点
                     if (note.Dot()) {
                         shape.drawPoint(gu.X + noteRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
@@ -83,6 +86,27 @@ export class Render {
             // TODO
         }
         Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor);
+    }
+
+    private static renderNoteAlter(measureAltersTemp: Record<string, number>, note: Note, shape: Shape, gu: Guide, noteRectBound: RectBound, _y: number, cfg: Config): Record<string, number> {
+        let alter: number = null;
+        [alter, measureAltersTemp] = RenderHelper.getNoteAlter(measureAltersTemp, note.PitchStep(), note.PitchAlter());
+        if (alter == 2) {
+            // TODO
+        }
+        else if (alter == 1) {
+            shape.drawSharp(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+        }
+        else if (alter == 0) {
+            shape.drawRestore(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+        }
+        else if (alter == -1) {
+            shape.drawFlat(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+        }
+        else if (alter == -2) {
+            // TODO
+        }
+        return measureAltersTemp;
     }
 
     /**
@@ -292,10 +316,11 @@ export class Render {
      * @param {Config} cfg
      * @param {Shape} shape
      * @param {NoteRenderInfo[]} noteRenderInfoTemp 本小节的音符渲染信息
-     * @returns {NoteRenderInfo[]} 本小节的音符渲染信息
+     * @param {Record<string, number>} measureAltersTemp 本小节最新的升降信息
+     * @returns {[NoteRenderInfo[], Set<string>]} [本小节的音符渲染信息, 本小节最新的升降信息]
      * @memberof Render
      */
-    private static beforeRenderNote(gu: Guide, token: MxToken, cfg: Config, shape: Shape, noteRenderInfoTemp: NoteRenderInfo[]): NoteRenderInfo[] {
+    private static beforeRenderNote(gu: Guide, token: MxToken, cfg: Config, shape: Shape, noteRenderInfoTemp: NoteRenderInfo[], measureAltersTemp: Record<string, number>): [NoteRenderInfo[], Record<string, number>] {
         const isNewRow: boolean = gu.isRowStart();
         // 如果是行开始...
         if (isNewRow) {
@@ -324,9 +349,10 @@ export class Render {
         // 如果是小节开始...
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;
         if (lastNoteInfo == null || token.MeasureNo != lastNoteInfo.MeasureNo) {
-            // 画小节内符桿、符尾、符杠
+            // 画上一小节内符桿、符尾、符杠
             Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor);
             noteRenderInfoTemp = [];
+            measureAltersTemp = RenderHelper.MEASURE_ALTER_SET[token.Fifths];
             if (!isNewRow) {
                 token.Clefs.forEach(c => {
                     // 画小节分割线
@@ -337,7 +363,7 @@ export class Render {
             shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo + '', cfg.MeasureNoFontHeight, 'Microsoft Yahei', cfg.LineColor);
             gu.stepAhead(cfg.MeasureLeftPadding);
         }
-        return noteRenderInfoTemp;
+        return [noteRenderInfoTemp, measureAltersTemp];
     }
 
     /**
@@ -390,7 +416,7 @@ export class Render {
          * 5/-7     B/bC    #G/bA
          * 6/-6     #F/bG   #D/bE
          * 7/-5     #C/bD   #A/bB
-         * -4       F/bA    F
+         * -4       bA    F
          * -3       bE      C
          * -2       bB      G
          * -1       F       D

@@ -1,6 +1,72 @@
 import NoteRenderInfo from "./noteRenderInfo";
 
 export default class RenderHelper {
+    /**
+     * 各五度的升降号信息
+     * @static
+     * @type {Record<string, Record<string, number>>}
+     * @memberof RenderHelper
+     */
+    public static MEASURE_ALTER_SET: Record<string, Record<string, number>> = {
+        /**
+         * musicXml中fifths值说明：
+         * 数字     大调    小调
+         * 0        C       A
+         * 1        G       E
+         * 2        D       B
+         * 3        A       #F
+         * 4        E       #C
+         * 5/-7     B/bC    #G/bA
+         * 6/-6     #F/bG   #D/bE
+         * 7/-5     #C/bD   #A/bB
+         * -4       bA    F
+         * -3       bE      C
+         * -2       bB      G
+         * -1       F       D
+         */
+
+        '0': {},
+        '1': {'F': 1},
+        '2': {'C': 1, 'F': 1},
+        '3': {'C':1, 'F':1, 'G':1},
+        '4': {'C':1, 'D':1, 'F':1, 'G':1},
+        '5': {'C':1, 'D':1, 'F':1, 'G':1, 'A':1},
+        '6': {'C':1, 'D':1, 'F':1, 'G':1, 'A':1},
+        '7': {'C':1, 'D':1, 'F':1, 'G':1, 'A':1},
+        '-4': {'D':-1, 'E': -1, 'A': -1, 'B': -1},
+        '-3': {'E': -1, 'B': -1, 'A': -1},
+        '-2': {'E': -1, 'B': -1},
+        '-1': {'B': -1}
+    };
+
+    /**
+     * 获取音符在实际渲染中的升降符号信息
+     * @static
+     * @param {Record<string, number>} measureAlters 本小节属性：最新的升降信息
+     * @param {string} noteStep 音符属性: 音名
+     * @param {number} noteAlter 音符属性: 升降 (0: 还原; 1: 升; -1: 降)
+     * @returns {[number, Record<string, number>]} 0: 还原; 1: 升; -1: 降; null: 没有符号
+     * @memberof RenderHelper
+     */
+    static getNoteAlter(measureAlters: Record<string, number>, noteStep: string, noteAlter: number): [number, Record<string, number>] {
+        if ((noteStep) in measureAlters) {
+            if (!noteAlter) {
+                // 小节开头已经画升降了，但此音符是还原音，需显式地画还原记号
+                measureAlters[noteStep] = 0;
+                return [0, measureAlters]; 
+            }
+            const subAlter: number = noteAlter - measureAlters[noteStep];
+            if (subAlter == 0) {
+                // 小节开头已经画升降了，就不用画升降号了
+                return [null, measureAlters]; 
+            } else {
+                measureAlters[noteStep] = subAlter;
+                return [subAlter, measureAlters];
+            }
+        } else {
+            return [noteAlter, measureAlters];
+        }
+    }
 
     /**
      * 获取音符在五线谱上的位置
