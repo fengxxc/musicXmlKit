@@ -1,3 +1,6 @@
+import MxToken from "./mxToken";
+import { Note } from "../model/interface/note";
+
 export default class NoteRenderInfo {
     // 所在小节号
     private measureNo: number;
@@ -61,6 +64,13 @@ export default class NoteRenderInfo {
             else if (beams[0] == 'end'  ) this.beamType = 2;
         }
     }
+    public static instance(x: number, y: number, headWidth: number, token: MxToken, note: Note): NoteRenderInfo {
+        return new NoteRenderInfo(
+            token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep()
+            , note.PitchOctave(), x, y, headWidth, note.Stem(), note.Staff(), note.Dot(), note.Beams()
+        );
+    }
+
     get MeasureNo(): number { return this.measureNo; }
     set MeasureNo(measureNo: number) { this.measureNo = measureNo; }
     get IsRest(): boolean { return this.isRest; }

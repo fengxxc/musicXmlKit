@@ -24,7 +24,6 @@ export class Render {
         const shape: Shape = new Shape(canvasDom);
         const iterator = MxIterator.getIterator(musicXmlNode);
         let entry = null;
-        
         let noteRenderInfoTemp: NoteRenderInfo[] = [];
         let measureAltersTemp: Record<string, number> = null;
         let token: MxToken = null;
@@ -60,9 +59,9 @@ export class Render {
                         shape.drawPoint(gu.X + noteRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
                     }
                     // 画加线（如果有的话）
-                    Render.renderAddLine(shape, gu.X, _y, line, cfg.LineSpace, noteRectBound.Width * 3 / 2, cfg.LineWidth, cfg.LineColor);
+                    Render.renderLedgerLine(shape, gu.X, _y, line, cfg.LineSpace, noteRectBound.Width * 3 / 2, cfg.LineWidth, cfg.LineColor);
                 }
-                noteRenderInfoTemp.push( new NoteRenderInfo(token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep(), note.PitchOctave(), gu.X, _y, noteRectBound.Width, note.Stem(), note.Staff(), note.Dot(), note.Beams()) );
+                noteRenderInfoTemp.push(NoteRenderInfo.instance(gu.X, _y, noteRectBound.Width, token, note));
                 gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRectBound.Width);
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
@@ -562,17 +561,17 @@ export class Render {
      * @param {string} fillColorHex
      * @memberof Render
      */
-    private static renderAddLine(shape: Shape, x: number, y: number, line: number, lineSpace: number, lineLength: number, lineWidth: number, fillColorHex: string) {
-        const addLineCount: number = (() => {
-            if (line <= 0)      return Math.floor(-line) + 1;
-            else if (6 <= line) return Math.floor(line - 5);
-            else                return 0;
-        })();
-        if (addLineCount != 0) {
-            const addLineDire: number = line == 0 ? 1 : line / Math.abs(line); // 加线迭代方向: 1是下；-1是上
-            const addLineY: number = (Math.abs(line) % 1 > 0) ? y + addLineDire * 0.5 * lineSpace : y;
-            const addLineX: number = x - lineLength / 2;
-            shape.drawMultiHorizontalLine(addLineX, addLineY, lineLength, lineWidth, fillColorHex, addLineCount, addLineDire, lineSpace);
+    private static renderLedgerLine(shape: Shape, x: number, y: number, line: number, lineSpace: number, lineLength: number, lineWidth: number, fillColorHex: string) {
+        const ledgerLineCount: number = ((_line) => {
+            if (_line <= 0)      return Math.floor(-_line) + 1;
+            else if (6 <= _line) return Math.floor(_line - 5);
+            else                 return 0;
+        })(line);
+        if (ledgerLineCount != 0) {
+            const ledgerLineDire: number = line == 0 ? 1 : line / Math.abs(line); // 加线迭代方向: 1是下；-1是上
+            const ledgerLineY: number = (Math.abs(line) % 1 > 0) ? y + ledgerLineDire * 0.5 * lineSpace : y;
+            const ledgerLineX: number = x - lineLength / 2;
+            shape.drawMultiHorizontalLine(ledgerLineX, ledgerLineY, lineLength, lineWidth, fillColorHex, ledgerLineCount, ledgerLineDire, lineSpace);
         }
     }
 }
