@@ -4,14 +4,11 @@ const WebpackOnBuildPlugin = require('on-build-webpack')
 
 const buildDir = './test/view/built'
 
-function getTime() {
-    return new Date().toLocaleString('zh', { hour12: false });
-}
-
 module.exports = {
     entry: {
         shape: './test/view/shape.test.ts',
-        render: './test/view/render.test.ts'
+        render: './test/view/render.test.ts',
+        render_all_clef: './test/view/render_all_clef.test.ts'
     },
     devtool: 'inline-source-map',
     module: {
@@ -46,6 +43,15 @@ module.exports = {
             template: './test/view/template/tmpl-canvas.html',
             filename: './render.test.html',
             chunks: ['render'],
+            showErrors: true,
+            inject: true,
+            hash: true
+        }),
+        new HtmlWebpackPlugin({
+            title: 'render_all_clef-test',
+            template: './test/view/template/tmpl-canvas.html',
+            filename: './render_all_clef.test.html',
+            chunks: ['render_all_clef'],
             showErrors: true,
             inject: true,
             hash: true

@@ -3,7 +3,7 @@
 <score-partwise version="2.0">
  <identification>
   <encoding>
-   <encoding-date>2020-09-13</encoding-date>
+   <encoding-date>2020-09-14</encoding-date>
    <software>Guitar Pro 7.5.0</software>
   </encoding>
  </identification>
@@ -102,7 +102,7 @@
    </attributes>
    <direction directive="yes">
     <direction-type>
-     <metronome default-y="40" parentheses="yes">
+     <metronome parentheses="yes" default-y="40">
       <beat-unit>quarter</beat-unit>
       <per-minute>120</per-minute>
      </metronome>
@@ -217,6 +217,30 @@
     </notations>
    </note>
    <note>
+    <chord/>
+    <pitch>
+     <step>E</step>
+     <alter>1</alter>
+     <octave>3</octave>
+    </pitch>
+    <duration>1</duration>
+    <voice>5</voice>
+    <type>eighth</type>
+    <stem>down</stem>
+    <notehead>normal</notehead>
+    <staff>2</staff>
+    <beam number="1">continue</beam>
+    <notations>
+     <dynamics>
+      <pp/>
+     </dynamics>
+     <technical>
+      <string>2</string>
+      <fret>15</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
     <pitch>
      <step>F</step>
      <alter>1</alter>
@@ -236,6 +260,30 @@
      <technical>
       <string>1</string>
       <fret>11</fret>
+     </technical>
+    </notations>
+   </note>
+   <note>
+    <chord/>
+    <pitch>
+     <step>G</step>
+     <octave>3</octave>
+    </pitch>
+    <duration>1</duration>
+    <voice>5</voice>
+    <type>eighth</type>
+    <accidental>natural</accidental>
+    <stem>down</stem>
+    <notehead>normal</notehead>
+    <staff>2</staff>
+    <beam number="1">end</beam>
+    <notations>
+     <dynamics>
+      <pp/>
+     </dynamics>
+     <technical>
+      <string>2</string>
+      <fret>17</fret>
      </technical>
     </notations>
    </note>
