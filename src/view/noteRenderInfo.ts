@@ -2,50 +2,49 @@ import MxToken from "./mxToken";
 import { Note } from "../model/interface/note";
 
 export default class NoteRenderInfo {
+    /* 小节信息 */
     // 所在小节号
     private measureNo: number;
+    // 五度信息（调号）
+    private fifths: number;
+    // 以几分音符为一拍
+    private timeBeatType: number;
+    // 每小节有几拍
+    private timeBeats: number;
 
+    /* 音符信息 */
     // 是否是休止符
     private isRest: boolean;
-
     // 是否是和弦音，若是，则渲染时x轴不变
     private isChord: boolean;
-
     // 本小节每个4分音符的分割数。我的理解是：本小节时值最小的元素占一个四分音符的几分之一
     private divisions: number; 
-
     // 持续时间长度。我的理解是：该音符是几个dicisions，所以，dutation / dicisions的值，就是几个4分音符的时值长度
     private duration: number; 
-
     // 音名
     private pitchStep: string; 
-
     // 八度
     private pitchOctave: number;
-
     // 在画布中的x坐标
     private x: number;
-
     // 在画布中的y坐标
     private y: number;
-
     // 符头宽度
     private headWidth: number;
-
     // 符桿朝向
     private stem: string;
-
     // 在哪个五线谱上
     private staff: number;
-
     // 是否是附点音符
     private isDot: boolean;
-
     // 符杠 0: 没有符杠, 1: 符杠开始, 2: 符杠结束
     private beamType: number;
 
-    constructor(measureNo: number, isRest: boolean, isChord: boolean, divisions: number, duration: number, pitchStep: string, pitchOctave: number, x: number, y: number, headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]) {
+    constructor(measureNo: number, fifths: number, timeBeatType: number, timeBeats: number, isRest: boolean, isChord: boolean, divisions: number, duration: number, pitchStep: string, pitchOctave: number, x: number, y: number, headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]) {
         this.measureNo = measureNo;
+        this.fifths = fifths;
+        this.timeBeatType = timeBeatType;
+        this.timeBeats = timeBeats;
         this.isRest = isRest;
         this.isChord = isChord;
         this.divisions = divisions;
@@ -66,13 +65,19 @@ export default class NoteRenderInfo {
     }
     public static instance(x: number, y: number, headWidth: number, token: MxToken, note: Note): NoteRenderInfo {
         return new NoteRenderInfo(
-            token.MeasureNo, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep()
+            token.MeasureNo, token.Fifths, token.TimeBeatType, token.TimeBeats, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep()
             , note.PitchOctave(), x, y, headWidth, note.Stem(), note.Staff(), note.Dot(), note.Beams()
         );
     }
 
     get MeasureNo(): number { return this.measureNo; }
     set MeasureNo(measureNo: number) { this.measureNo = measureNo; }
+    get Fifths(): number { return this.fifths; }
+    set Fifths(fifths: number) { this.fifths = fifths; }
+    get TimeBeatType(): number { return this.timeBeatType; }
+    set TimeBeatType(timeBeatType: number) { this.timeBeatType = timeBeatType; }
+    get TimeBeats(): number { return this.timeBeats; }
+    set TimeBeats(timeBeats: number) { this.timeBeats = timeBeats; }
     get IsRest(): boolean { return this.isRest; }
     set IsRest(isRest: boolean) { this.isRest = isRest; }
     get IsChord(): boolean { return this.isChord; }

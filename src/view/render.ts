@@ -326,7 +326,7 @@ export class Render {
             gu.CurMeasureHeight = (token.Clefs.length - 1) * (cfg.StaveSpace + cfg.Stave5Height) + cfg.Stave5Height;
             // 一整行谱左边的起始竖线
             shape.drawLine(gu.X, gu.Y(1), gu.X, gu.Y(1) + gu.CurMeasureHeight, cfg.LineWidth, cfg.LineColor);
-            let curMeasureStartX = 0; // 本小节起始x
+            let startX = 0; // 本行起始x
             token.Clefs.forEach(c => {
                 let _x = gu.X;
                 const _y: number = gu.Y(c.Number);
@@ -334,16 +334,11 @@ export class Render {
                 shape.drawMultiHorizontalLine(_x, _y, cfg.ContentWidth, cfg.LineWidth, cfg.LineColor, 5, 1 , cfg.LineSpace);
                 // 画谱号
                 const cRb: RectBound = Render.renderClefSign(shape, c.Sign, _x += cfg.RowLeftPadding, _y + cfg.Stave5Height - (c.Line - 1) * cfg.LineSpace, cfg.LineSpace);
-                // gu.stepAhead(rb.Width);
-                // 画音调符号
-                const kRb: RectBound = Render.renderKeySign(shape, _x += cRb.Width + cfg.MeasureLeftPadding, _y, token.Fifths, token.Mode, c.Sign, c.Line, cfg.LineSpace, cfg.LineColor);
-                // 画拍号
-                const tRb: RectBound = Render.renderTimeBeat(shape, _x += kRb.Width, _y, token.TimeBeatType, token.TimeBeats, cfg.LineSpace, cfg.LineColor);
                 if (c.Number == 1) {
-                    curMeasureStartX = _x += tRb.Width;
+                    startX = _x += cRb.Width;
                 }
             });
-            gu.stepAhead(curMeasureStartX);
+            gu.stepAhead(startX);
         }
         // 如果是小节开始...
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;
@@ -353,14 +348,27 @@ export class Render {
             noteRenderInfoTemp = [];
             measureAltersTemp = RenderHelper.MEASURE_ALTER_SET[token.Fifths];
             if (!isNewRow) {
-                token.Clefs.forEach(c => {
-                    // 画小节分割线
-                    shape.drawVerticalLine(gu.X, gu.Y(c.Number), cfg.Stave5Height, cfg.LineWidth, cfg.LineColor);
-                });
+                // 画小节分割线
+                token.Clefs.forEach(c => shape.drawVerticalLine(gu.X, gu.Y(c.Number), cfg.Stave5Height, cfg.LineWidth, cfg.LineColor));
             }
             // 画小节号
             shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo + '', cfg.MeasureNoFontHeight, 'Microsoft Yahei', cfg.LineColor);
-            gu.stepAhead(cfg.MeasureLeftPadding);
+            let overX = cfg.MeasureLeftPadding;
+            if (lastNoteInfo == null || lastNoteInfo.Fifths != token.Fifths) {
+                // 画音调符号
+                token.Clefs.forEach(c => {
+                    const kRb: RectBound = Render.renderKeySign(shape, gu.X + overX, gu.Y(c.Number), token.Fifths, token.Mode, c.Sign, c.Line, cfg.LineSpace, cfg.LineColor);
+                    if (c.Number == token.Clefs.length) overX += kRb.Width;
+                });
+            }
+            if (lastNoteInfo == null || (lastNoteInfo.TimeBeatType != token.TimeBeatType || lastNoteInfo.TimeBeats != token.TimeBeats)) {
+                // 画拍号
+                token.Clefs.forEach(c => {
+                    const tRb: RectBound = Render.renderTimeBeat(shape, gu.X + overX, gu.Y(c.Number), token.TimeBeatType, token.TimeBeats, cfg.LineSpace, cfg.LineColor);
+                    if (c.Number == token.Clefs.length) overX += tRb.Width;
+                });
+            }
+            gu.stepAhead(overX + cfg.MeasureLeftPadding);
         }
         return [noteRenderInfoTemp, measureAltersTemp];
     }
@@ -415,7 +423,7 @@ export class Render {
          * 5/-7     B/bC    #G/bA
          * 6/-6     #F/bG   #D/bE
          * 7/-5     #C/bD   #A/bB
-         * -4       bA    F
+         * -4       bA      F
          * -3       bE      C
          * -2       bB      G
          * -1       F       D
