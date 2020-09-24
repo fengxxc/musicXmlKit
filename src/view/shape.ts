@@ -200,10 +200,11 @@ export class Shape {
      * @param {string} text
      * @param {string} font textFont: '18px Microsoft Yahei'
      * @param {string} colorHex
+     * @param {string} textAlign
      * @returns {zrender}
      * @memberof Shape
      */
-    static Text(x: number, y: number, text: string, font: string, colorHex: string): zrender {
+    static Text(x: number, y: number, text: string, font: string, colorHex: string, textAlign: string): zrender {
         return new zrender.Text({
             style: {
                 x: x,
@@ -211,6 +212,7 @@ export class Shape {
                 text: text,
                 textFont: font,
                 textFill: colorHex,
+                textAlign: textAlign
             }
         })
     }
@@ -507,8 +509,8 @@ export class Shape {
         return this.draw(Shape.ClefC(x, y, lineSpace / 20));
     }
 
-    drawText(x: number, y: number, text: string, lineSpace: number, fontFamily: string, colorHex: string): RectBound {
-        return this.draw(Shape.Text(x, y, text, lineSpace * 1.2 + 'px ' + fontFamily, colorHex));
+    drawText(x: number, y: number, text: string, lineSpace: number, fontFamily: string, colorHex: string, textAlign?: string): RectBound {
+        return this.draw(Shape.Text(x, y, text, lineSpace * 1.2 + 'px ' + fontFamily, colorHex, textAlign));
     }
 
     drawSharp(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {

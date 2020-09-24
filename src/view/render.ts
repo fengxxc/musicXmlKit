@@ -486,8 +486,11 @@ export class Render {
      * @memberof Render
      */
     private static renderTimeBeat(shape: Shape, x: number, y: number, timeBeatType: number, timeBeats: number, lineSpace: number, colorHex: string): RectBound {
+        if ((timeBeatType+'').length > (timeBeats+'').length) {
+            return Render.renderTimeBeat(shape, x, y, timeBeats, timeBeatType, lineSpace, colorHex);
+        }
         const rb: RectBound =shape.drawText(x, y, timeBeats+'', lineSpace * 2, 'Microsoft Yahei', colorHex);
-        shape.drawText(x, y + lineSpace * 2, timeBeatType+'', lineSpace * 2, 'Microsoft Yahei', colorHex);
+        shape.drawText(x + rb.Width/2, y + lineSpace * 2, timeBeatType+'', lineSpace * 2, 'Microsoft Yahei', colorHex, 'center');
         return new RectBound(rb.Width, lineSpace * 4);
     }
 
