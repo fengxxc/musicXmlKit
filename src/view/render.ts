@@ -68,7 +68,8 @@ export class Render {
                         const noteRenderInfo: NoteRenderInfo = noteRenderInfoTemp[i];
                         backupDuration -= noteRenderInfo.Duration;
                         if (backupDuration <= 0) {
-                            res = gu.X - noteRenderInfo.X;
+                            const des = gu.X - noteRenderInfo.X
+                            res = des < 0 ? cfg.ContentWidth + des : des;
                             break;
                         }
                     }

@@ -32,10 +32,14 @@ export default class Guide {
      * 去下一个要绘制的图形原点
      */
     public stepAhead(xLength: number): void {
-        if (this.oX + xLength >= this.cfg.PaddingLeft + this.cfg.ContentWidth) {
+        if (this.oX + xLength >= this.cfg.PaddingLeft + 0.5 + this.cfg.ContentWidth) {
             // 去下一行起始处
             this.oX = this.cfg.PaddingLeft + 0.5;
             this.oY += this.curMeasureHeight + this.cfg.RowSpave;
+        } else if (this.oX + xLength < this.cfg.PaddingLeft + 0.5) {
+            // 去上一行结束处
+            this.oX = this.cfg.ContentWidth + (this.oX + xLength);
+            this.oY -= this.curMeasureHeight + this.cfg.RowSpave;
         } else {
             this.oX += Math.round(xLength);
         }
