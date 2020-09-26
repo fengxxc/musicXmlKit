@@ -29,11 +29,9 @@ export class Render {
         let token: MxToken = null;
         while (!(entry = iterator.next()).done) {
             token = entry.value;
-            // console.log(token);
             if (token.SpiritType == 'note') {
                 // 做渲染音符之前应该做的事...
                 [noteRenderInfoTemp, measureAltersTemp] = Render.beforeRenderNote(gu, token, cfg, shape, noteRenderInfoTemp, measureAltersTemp);
-
                 // 开始渲染音符和他的朋友们
                 const note: Note = <Note>token.Spirit;
                 let _y = gu.Y(note.Staff());
@@ -47,17 +45,15 @@ export class Render {
                     const line: number = RenderHelper.getLineByPitchSign(note.PitchStep(), note.PitchOctave(), clefToken.Sign, clefToken.Line);
                     _y += (cfg.LineSpace * 5) - (line * cfg.LineSpace);
                     // 如果是和弦音，保证横坐标方向上跟上个音符一样
-                    if (note.Chord()) { // 和弦音在x轴不前进，固退回
+                    if (note.Chord()) // 和弦音在x轴不前进，固退回
                         gu.stepAhead(-(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRenderInfoTemp[noteRenderInfoTemp.length-1].HeadWidth));
-                    }
                     // 画符头
                     noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
                     // 画升降号（如果有的话）
                     measureAltersTemp = Render.renderNoteAlter(measureAltersTemp, note, shape, gu, noteRectBound, _y, cfg);
                     // 画符点
-                    if (note.Dot()) {
+                    if (note.Dot())
                         shape.drawPoint(gu.X + noteRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
-                    }
                     // 画加线（如果有的话）
                     Render.renderLedgerLine(shape, gu.X, _y, line, cfg.LineSpace, noteRectBound.Width * 3 / 2, cfg.LineWidth, cfg.LineColor);
                 }
@@ -72,7 +68,7 @@ export class Render {
                         const noteRenderInfo: NoteRenderInfo = noteRenderInfoTemp[i];
                         backupDuration -= noteRenderInfo.Duration;
                         if (backupDuration <= 0) {
-                            res =  gu.X - noteRenderInfo.X;
+                            res = gu.X - noteRenderInfo.X;
                             break;
                         }
                     }
@@ -87,23 +83,39 @@ export class Render {
         Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor);
     }
 
+    /**
+     * 渲染 升/降/还原/... 记号
+     * @private
+     * @static
+     * @param {Record<string, number>} measureAltersTemp
+     * @param {Note} note
+     * @param {Shape} shape
+     * @param {Guide} gu
+     * @param {RectBound} noteRectBound
+     * @param {number} _y
+     * @param {Config} cfg
+     * @return {Record<string, number>}
+     * @memberof Render
+     */
     private static renderNoteAlter(measureAltersTemp: Record<string, number>, note: Note, shape: Shape, gu: Guide, noteRectBound: RectBound, _y: number, cfg: Config): Record<string, number> {
         let alter: number = null;
         [alter, measureAltersTemp] = RenderHelper.getNoteAlter(measureAltersTemp, note.PitchStep(), note.PitchAlter());
-        if (alter == 2) {
-            // TODO
-        }
-        else if (alter == 1) {
-            shape.drawSharp(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
-        }
-        else if (alter == 0) {
-            shape.drawRestore(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
-        }
-        else if (alter == -1) {
-            shape.drawFlat(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
-        }
-        else if (alter == -2) {
-            // TODO
+        switch (alter) {
+            case 2: // TODO 重升
+                break;
+            case 1:
+                shape.drawSharp(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+                break;
+            case 0:
+                shape.drawRestore(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+                break;
+            case -1:
+                shape.drawFlat(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+                break;
+            case -2: // TODO 重降
+                break;
+            default:
+                break;
         }
         return measureAltersTemp;
     }
@@ -197,14 +209,9 @@ export class Render {
      * @memberof Render
      */
     private static renderNoteTails(shape: Shape, x: number, y: number, stemDire: number, count: number, lineSpace: number, colorHex: string): RectBound {
-        for (let i = 0; i < count; i++) {
-            if (stemDire == -1) {
-                shape.drawNoteTail(x, y - stemDire * lineSpace * i, lineSpace, colorHex);
-            } else {
-                shape.drawNoteTailFlip(x, y - stemDire * lineSpace * i,lineSpace, colorHex);
-            }
-            
-        }
+        for (let i = 0; i < count; i++)
+            if (stemDire == -1) shape.drawNoteTail(x, y - stemDire * lineSpace * i, lineSpace, colorHex);
+            else                shape.drawNoteTailFlip(x, y - stemDire * lineSpace * i,lineSpace, colorHex);
         return null;
     }
 
@@ -250,7 +257,7 @@ export class Render {
             // 符桿朝上就取最高的，朝下就取最低的
             for (let i = start + 1; i <= end; i++) {
                 const nri: NoteRenderInfo = noteRenderInfos[i];
-                if (nri.Y > low.Y) low = nri;
+                if (nri.Y > low.Y) low   = nri;
                 if (nri.Y < high.Y) high = nri;
             }
             const target: NoteRenderInfo = stemDire == -1 ? high : low;
@@ -259,7 +266,6 @@ export class Render {
         const noteHeadOffsetX = Math.floor(noteRenderInfos[start].HeadWidth / 2) * (-stemDire);
         // 初始符杠基准点X
         let baseTailX: number = noteRenderInfos[start].X + noteHeadOffsetX;
-        // shape.drawPoint(baseTailX, baseTailY, 2, '#00f', '#00f'); // test
 
         const [_start, firstNoteInfo]: [number,NoteRenderInfo] = RenderHelper.mergeChordNoteRenderInfo(start, end, noteRenderInfos, stemDire);
         let prevprev: NoteRenderInfo = null;
@@ -267,8 +273,8 @@ export class Render {
         for (let i = _start + 1; i < noteRenderInfos.length + 1 && i <= end + 1; i++) {
             let self: NoteRenderInfo = null;
             /* 多个和弦音处理成一个，最后一个用没有实际意义的虚拟音占位 */
-            [i, self] = (i != end + 1) ? RenderHelper.mergeChordNoteRenderInfo(i, end, noteRenderInfos, stemDire) 
-                                       : [i, new NoteRenderInfo(-1, false, false, prev.Divisions, 0, '', 0, 0, 0, 0, '', 0, false, null)];
+            [i, self] = (i != end + 1) ? RenderHelper.mergeChordNoteRenderInfo(i, end, noteRenderInfos, stemDire) //
+                                       : [i, new NoteRenderInfo(-1, 0, 0, 0, false, false, prev.Divisions, 0, '', 0, 0, 0, 0, '', 0, false, null)];
 
             const prevBeamCount: number = RenderHelper.computeTailCount(prev.IsDot, prev.Duration, prev.Divisions);
             const selfBeamCount: number = RenderHelper.computeTailCount(self.IsDot, self.Duration, self.Divisions);
@@ -281,7 +287,6 @@ export class Render {
             /* 渲染当前和前一个公共的符杠 */
             for (let c = 0; c < commBeamCount; c++, _y += noteBeamWidth * 2 * (-stemDire)) {
                 shape.drawLine(baseTailX, _y, self.X + noteHeadOffsetX, _y + (self.X + noteHeadOffsetX - baseTailX) * tan, noteBeamWidth, colorHex)
-                // shape.drawPoint(baseTailX, _y, 2, '#00f', '#00f'); // test
             }
 
             /* 渲染前一个不相连的符杠 */
