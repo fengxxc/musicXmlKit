@@ -40,7 +40,11 @@ export default class NoteRenderInfo {
     // 符杠 0: 没有符杠, 1: 符杠开始, 2: 符杠结束
     private beamType: number;
 
-    constructor(measureNo: number, fifths: number, timeBeatType: number, timeBeats: number, isRest: boolean, isChord: boolean, divisions: number, duration: number, pitchStep: string, pitchOctave: number, x: number, y: number, headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]) {
+    constructor(
+        measureNo: number, fifths: number, timeBeatType: number, timeBeats: number, isRest: boolean
+        , isChord: boolean , divisions: number, duration: number , pitchStep: string, pitchOctave: number
+        , x: number, y: number , headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]
+    ) {
         this.measureNo = measureNo;
         this.fifths = fifths;
         this.timeBeatType = timeBeatType;
@@ -65,9 +69,21 @@ export default class NoteRenderInfo {
     }
     public static instance(x: number, y: number, headWidth: number, token: MxToken, note: Note): NoteRenderInfo {
         return new NoteRenderInfo(
-            token.MeasureNo, token.Fifths, token.TimeBeatType, token.TimeBeats, note.Rest(), note.Chord(), token.Divisions, note.Duration(), note.PitchStep()
-            , note.PitchOctave(), x, y, headWidth, note.Stem(), note.Staff(), note.Dot(), note.Beams()
+            token.MeasureNo, token.Fifths, token.TimeBeatType, token.TimeBeats, note.Rest()
+            , note.Chord() , token.Divisions , note.Duration() , note.PitchStep() , note.PitchOctave()
+            , x, y, headWidth , note.Stem(), note.Staff(), note.Dot(), note.Beams()
         );
+    }
+
+    /**
+     * 实例化一个虚拟音
+     * @static
+     * @param {number} divisions
+     * @return {*}  {NoteRenderInfo}
+     * @memberof NoteRenderInfo
+     */
+    public static instanceVirtual(divisions: number): NoteRenderInfo {
+        return new NoteRenderInfo(0, 0, 0, 0, false, false, divisions, 0, '', 0, 0, 0, 0, '', 0, false, null);
     }
 
     get MeasureNo(): number { return this.measureNo; }

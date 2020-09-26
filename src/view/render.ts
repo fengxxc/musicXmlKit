@@ -68,7 +68,7 @@ export class Render {
                         const noteRenderInfo: NoteRenderInfo = noteRenderInfoTemp[i];
                         backupDuration -= noteRenderInfo.Duration;
                         if (backupDuration <= 0) {
-                            const des = gu.X - noteRenderInfo.X
+                            const des = gu.X - noteRenderInfo.X;
                             res = des < 0 ? cfg.ContentWidth + des : des;
                             break;
                         }
@@ -81,7 +81,10 @@ export class Render {
             }
             // TODO
         }
-        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor);
+        Render.completeRenderMeasureNotes(
+            noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth
+            , cfg.LineWidth * 3 , cfg.LineSpace , cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor
+        );
     }
 
     /**
@@ -129,16 +132,19 @@ export class Render {
      * @param {Shape} shape
      * @param {number} beats
      * @param {number} beatType
-     * @param {number} noteStemHeight
-     * @param {number} noteStemWidth
-     * @param {number} noteBeamWidth
+     * @param {number} noteStemHeight   符桿高度
+     * @param {number} noteStemWidth    符桿宽度
+     * @param {number} noteBeamWidth    符杠宽度
      * @param {number} lineSpace
      * @param {number} noteBeamSlopeFactor
-     * @param {string} beamInfoFrom // 符杠连接信息来自于 musicxml | auto
+     * @param {string} beamInfoFrom 符杠连接信息来自于 musicxml | auto
      * @param {string} colorHex
      * @memberof Render
      */
-    private static completeRenderMeasureNotes(noteRenderInfos: NoteRenderInfo[], shape: Shape, beats: number, beatType: number, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, noteBeamSlopeFactor: number, beamInfoFrom: string, colorHex: string) {
+    private static completeRenderMeasureNotes(
+        noteRenderInfos: NoteRenderInfo[], shape: Shape, beats: number, beatType: number, noteStemHeight: number, noteStemWidth: number
+        , noteBeamWidth: number , lineSpace: number, noteBeamSlopeFactor: number, beamInfoFrom: string, colorHex: string
+    ) {
         // 设4分音符长度为1，在一组连体音符中有多少个4分音符长度
         const quarterCountInSiamesed: number = RenderHelper.computeQuarterCountInSiamesed(beats, beatType);
         // console.log(quarterCountInSiamesed);
@@ -223,15 +229,18 @@ export class Render {
      * @param {NoteRenderInfo[]} noteRenderInfos  本小节的音符渲染信息
      * @param {number} start   包括
      * @param {number} end     包括
-     * @param {number} noteStemHeight
-     * @param {number} noteStemWidth
-     * @param {number} noteBeamWidth
+     * @param {number} noteStemHeight   符桿高度 
+     * @param {number} noteStemWidth    符桿宽度
+     * @param {number} noteBeamWidth    符杠宽度
      * @param {number} singleBeamLength
-     * @param {number} noteBeamSlopeFactor // 符杠倾斜系数 0~1
+     * @param {number} noteBeamSlopeFactor 符杠倾斜系数 0~1
      * @param {string} colorHex
      * @memberof Render
      */
-    private static renderSiamesedNotes(noteRenderInfos: NoteRenderInfo[], start: number, end: number, shape: Shape, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number, lineSpace: number, singleBeamLength: number, noteBeamSlopeFactor: number, colorHex: string) {
+    private static renderSiamesedNotes(
+        noteRenderInfos: NoteRenderInfo[], start: number, end: number, shape: Shape, noteStemHeight: number, noteStemWidth: number
+        , noteBeamWidth: number , lineSpace: number, singleBeamLength: number, noteBeamSlopeFactor: number, colorHex: string
+    ) {
         // 符桿朝上吗？1 是下；-1是上
         const stemDire: number = noteRenderInfos[start].Stem == 'up' ? -1 : 1;
 
@@ -275,7 +284,7 @@ export class Render {
             let self: NoteRenderInfo = null;
             /* 多个和弦音处理成一个，最后一个用没有实际意义的虚拟音占位 */
             [i, self] = (i != end + 1) ? RenderHelper.mergeChordNoteRenderInfo(i, end, noteRenderInfos, stemDire) //
-                                       : [i, new NoteRenderInfo(-1, 0, 0, 0, false, false, prev.Divisions, 0, '', 0, 0, 0, 0, '', 0, false, null)];
+                                       : [i, NoteRenderInfo.instanceVirtual(prev.Divisions)];
 
             const prevBeamCount: number = RenderHelper.computeTailCount(prev.IsDot, prev.Duration, prev.Divisions);
             const selfBeamCount: number = RenderHelper.computeTailCount(self.IsDot, self.Duration, self.Divisions);
@@ -296,7 +305,9 @@ export class Render {
                 if (i == _start + 1) 
                     return [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
                 const prevprevBeamCount = prevprev != null ? RenderHelper.computeTailCount(prevprev.IsDot, prevprev.Duration, prevprev.Divisions) : 0;
-                return (prevprevBeamCount >= selfBeamCount) ? [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
+                return (prevprevBeamCount >= selfBeamCount) ? 
+                                                [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] //
+                                                : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
             })();
             for (let v = 0; v < overBeamCount; v++) // 跳过的符杠
                 _y += noteBeamWidth * 2 * (-stemDire);
@@ -350,7 +361,10 @@ export class Render {
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;
         if (lastNoteInfo == null || token.MeasureNo != lastNoteInfo.MeasureNo) {
             // 画上一小节内符桿、符尾、符杠
-            Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth, cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor);
+            Render.completeRenderMeasureNotes(
+                noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7 , cfg.LineWidth
+                , cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor
+            );
             noteRenderInfoTemp = [];
             measureAltersTemp = RenderHelper.MEASURE_ALTER_SET[token.Fifths];
             if (!isNewRow) {
