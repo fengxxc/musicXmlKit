@@ -198,7 +198,7 @@ export class Shape {
      * @param {number} x
      * @param {number} y
      * @param {string} text
-     * @param {string} font textFont: '18px Microsoft Yahei'
+     * @param {string} font textFont: '18px Consolas'
      * @param {string} colorHex
      * @param {string} textAlign
      * @returns {zrender}

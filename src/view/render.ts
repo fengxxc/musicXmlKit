@@ -372,7 +372,7 @@ export class Render {
                 token.Clefs.forEach(c => shape.drawVerticalLine(gu.X, gu.Y(c.Number), cfg.Stave5Height, cfg.LineWidth, cfg.LineColor));
             }
             // 画小节号
-            shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo + '', cfg.MeasureNoFontHeight, 'Microsoft Yahei', cfg.LineColor);
+            shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo + '', cfg.MeasureNoFontHeight, 'Consolas', cfg.LineColor);
             let overX = cfg.MeasureLeftPadding;
             if (lastNoteInfo == null || lastNoteInfo.Fifths != token.Fifths) {
                 // 画音调符号
@@ -517,8 +517,8 @@ export class Render {
         if ((timeBeatType+'').length > (timeBeats+'').length) {
             return Render.renderTimeBeat(shape, x, y, timeBeats, timeBeatType, lineSpace, colorHex);
         }
-        const rb: RectBound =shape.drawText(x, y, timeBeats+'', lineSpace * 2, 'Microsoft Yahei', colorHex);
-        shape.drawText(x + rb.Width/2, y + lineSpace * 2, timeBeatType+'', lineSpace * 2, 'Microsoft Yahei', colorHex, 'center');
+        const rb: RectBound =shape.drawText(x, y, timeBeats+'', lineSpace * 2, 'Consolas', colorHex);
+        shape.drawText(x + rb.Width/2, y + lineSpace * 2, timeBeatType+'', lineSpace * 2, 'Consolas', colorHex, 'center');
         return new RectBound(rb.Width, lineSpace * 4);
     }
 

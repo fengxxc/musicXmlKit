@@ -61,8 +61,8 @@ function main() {
     shape.drawPoint(x, y + lineDstc * 1, 2, '#0f0', '#000')
     x += 60
 
-    shape.drawText(x, y + lineDstc * 0, '4', lineDstc * 2, 'Microsoft Yahei', '#000')
-    shape.drawText(x, y + lineDstc * 2, '4', lineDstc * 2, 'Microsoft Yahei', '#000')
+    shape.drawText(x, y + lineDstc * 0, '4', lineDstc * 2, 'Consolas', '#000')
+    shape.drawText(x, y + lineDstc * 2, '4', lineDstc * 2, 'Consolas', '#000')
     shape.drawPoint(x, y + lineDstc * 0, 2, '#0f0', '#000')
     x += 60
 
