@@ -5,11 +5,15 @@ export default class Guide {
     private oX: number;
     private oY: number;
     private cfg: Config;
+    // 当前乐谱行高度
     private curMeasureHeight: number;
+    // 当前在乐谱的第几行，从1开始
+    private curViewLine: number;
     constructor(cfg: Config) {
         this.cfg = cfg;
         this.oX = cfg.PaddingLeft + 0.5;
         this.oY = cfg.PaddingTop + 0.5;
+        this.curViewLine = 0;
     }
 
     public get X(): number {
@@ -29,17 +33,26 @@ export default class Guide {
     }
 
     /**
+     * 获取y轴方向上前进一步（也就是换行）所需的距离
+     * @returns {number}
+     * @memberof Guide
+     */
+    public getYStepDistance(): number {
+        return this.curMeasureHeight + this.cfg.RowSpave;
+    }
+
+    /**
      * 去下一个要绘制的图形原点
      */
     public stepAhead(xLength: number): void {
         if (this.oX + xLength >= this.cfg.PaddingLeft + 0.5 + this.cfg.ContentWidth) {
             // 去下一行起始处
             this.oX = this.cfg.PaddingLeft + 0.5;
-            this.oY += this.curMeasureHeight + this.cfg.RowSpave;
+            this.oY += this.getYStepDistance();
         } else if (this.oX + xLength < this.cfg.PaddingLeft + 0.5) {
             // 去上一行结束处
             this.oX = this.cfg.ContentWidth + (this.oX + xLength);
-            this.oY -= this.curMeasureHeight + this.cfg.RowSpave;
+            this.oY -= this.getYStepDistance();
         } else {
             this.oX += Math.round(xLength);
         }
@@ -49,8 +62,15 @@ export default class Guide {
         this.curMeasureHeight = height;
     }
 
-
     public get CurMeasureHeight(): number {
         return this.curMeasureHeight;
+    }
+
+    public set CurViewLine(curViewLine: number) {
+        this.curViewLine = curViewLine;
+    }
+
+    public get CurViewLine(): number {
+        return this.curViewLine;
     }
 }

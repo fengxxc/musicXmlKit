@@ -25,10 +25,6 @@ export default class NoteRenderInfo {
     private pitchStep: string; 
     // 八度
     private pitchOctave: number;
-    // 在画布中的x坐标
-    private x: number;
-    // 在画布中的y坐标
-    private y: number;
     // 符头宽度
     private headWidth: number;
     // 符桿朝向
@@ -40,11 +36,20 @@ export default class NoteRenderInfo {
     // 符杠 0: 没有符杠, 1: 符杠开始, 2: 符杠结束
     private beamType: number;
 
+    /* 实际渲染信息 */
+    // 在画布中的x坐标
+    private x: number;
+    // 在画布中的y坐标
+    private y: number;
+    // 在渲染出的乐谱中第几行，从1开始
+    private viewLine: number;
+
     constructor(
-        measureNo: number, fifths: number, timeBeatType: number, timeBeats: number, isRest: boolean
-        , isChord: boolean , divisions: number, duration: number , pitchStep: string, pitchOctave: number
-        , x: number, y: number , headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]
+        measureNo: number, fifths: number, timeBeatType: number, timeBeats: number, isRest: boolean , isChord: boolean
+        , divisions: number, duration: number , pitchStep: string, pitchOctave: number , x: number, y: number
+        , viewLine: number, headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]
     ) {
+
         this.measureNo = measureNo;
         this.fifths = fifths;
         this.timeBeatType = timeBeatType;
@@ -57,6 +62,7 @@ export default class NoteRenderInfo {
         this.pitchOctave = pitchOctave;
         this.x = x;
         this.y = y;
+        this.viewLine = viewLine;
         this.headWidth = headWidth;
         this.stem = stem;
         this.staff = staff;
@@ -67,23 +73,26 @@ export default class NoteRenderInfo {
             else if (beams[0] == 'end'  ) this.beamType = 2;
         }
     }
-    public static instance(x: number, y: number, headWidth: number, token: MxToken, note: Note): NoteRenderInfo {
+    public static instance(x: number, y: number, viewLine: number, headWidth: number, token: MxToken, note: Note): NoteRenderInfo {
         return new NoteRenderInfo(
             token.MeasureNo, token.Fifths, token.TimeBeatType, token.TimeBeats, note.Rest()
             , note.Chord() , token.Divisions , note.Duration() , note.PitchStep() , note.PitchOctave()
-            , x, y, headWidth , note.Stem(), note.Staff(), note.Dot(), note.Beams()
+            , x, y, viewLine, headWidth , note.Stem(), note.Staff(), note.Dot(), note.Beams()
         );
     }
 
     /**
      * 实例化一个虚拟音
      * @static
-     * @param {number} divisions
-     * @return {*}  {NoteRenderInfo}
+     * @return {NoteRenderInfo}
      * @memberof NoteRenderInfo
      */
-    public static instanceVirtual(divisions: number): NoteRenderInfo {
-        return new NoteRenderInfo(0, 0, 0, 0, false, false, divisions, 0, '', 0, 0, 0, 0, '', 0, false, null);
+    public static instanceVirtual(viewLine: number): NoteRenderInfo {
+        return new NoteRenderInfo(0, 0, 0, 0, false, false, 0, 0, '', 0, 0, 0, viewLine, 0, '', 0, false, null);
+    }
+
+    public static instanceVirtualDisplayed(x: number, y: number, viewLine: number, isDot: boolean, duration: number, divisions: number, stem: string): NoteRenderInfo {
+        return new NoteRenderInfo(0, 0, 0, 0, false, false, divisions, duration, '', 0, x, y, viewLine, 0, stem, 0, isDot , null);
     }
 
     get MeasureNo(): number { return this.measureNo; }
@@ -110,6 +119,8 @@ export default class NoteRenderInfo {
     set X(x: number) { this.x = x; }
     get Y(): number { return this.y; }
     set Y(y: number) { this.y = y; }
+    get ViewLine(): number { return this.viewLine; }
+    set ViewLine(viewLine: number) { this.viewLine = viewLine; }
     get HeadWidth(): number { return this.headWidth; }
     set HeadWidth(headWidth: number) { this.headWidth = headWidth; }
     get Stem(): string { return this.stem; }

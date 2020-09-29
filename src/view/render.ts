@@ -46,9 +46,26 @@ export class Render {
                     _y += (cfg.LineSpace * 5) - (line * cfg.LineSpace);
                     // 如果是和弦音，保证横坐标方向上跟上个音符一样
                     if (note.Chord()) // 和弦音在x轴不前进，固退回
-                        gu.stepAhead(-(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRenderInfoTemp[noteRenderInfoTemp.length-1].HeadWidth));
+                        gu.stepAhead(- Render.getNoteStepXDistance(note.Duration(), token.Divisions, cfg.SingleDurationWidth, noteRenderInfoTemp[noteRenderInfoTemp.length-1].HeadWidth));
                     // 画符头
-                    noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
+                    if (
+                        noteRenderInfoTemp.length > 0
+                        && gu.CurViewLine != noteRenderInfoTemp[noteRenderInfoTemp.length - 1].ViewLine
+                        && note.Beams()[0] != 'begin'
+                    ) {
+                        const prev = noteRenderInfoTemp[noteRenderInfoTemp.length - 1];
+                        // 到右边距了，必须换行了，那就用两个虚拟音分割成两组
+                        // 具体的渲染策略是：当前复制一个（虚拟音）放到本行最后；上一个复制一个（虚拟音）放到下一行开头。注意viewLine参数了
+                        const currVirtualEnd = NoteRenderInfo.instanceVirtualDisplayed(cfg.PaddingLeft + cfg.ContentWidth, _y - gu.getYStepDistance(), prev.ViewLine, note.Dot(), note.Duration(), token.Divisions, note.Stem());
+                        const nextVirtualStart = NoteRenderInfo.instanceVirtualDisplayed(gu.X, prev.Y + gu.getYStepDistance(), gu.CurViewLine, prev.IsDot, prev.Duration, prev.Divisions, prev.Stem);
+                        noteRenderInfoTemp.push(currVirtualEnd);
+                        noteRenderInfoTemp.push(nextVirtualStart);
+                        const xOffset = Render.getNoteStepXDistance(prev.Duration, prev.Divisions, cfg.SingleDurationWidth, prev.HeadWidth) - (cfg.PaddingLeft + cfg.ContentWidth - prev.X);
+                        gu.stepAhead(xOffset);
+                        noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
+                    } else {
+                        noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
+                    }
                     // 画升降号（如果有的话）
                     measureAltersTemp = Render.renderNoteAlter(measureAltersTemp, note, shape, gu, noteRectBound, _y, cfg);
                     // 画符点
@@ -57,8 +74,8 @@ export class Render {
                     // 画加线（如果有的话）
                     Render.renderLedgerLine(shape, gu.X, _y, line, cfg.LineSpace, noteRectBound.Width * 3 / 2, cfg.LineWidth, cfg.LineColor);
                 }
-                noteRenderInfoTemp.push(NoteRenderInfo.instance(gu.X, _y, noteRectBound.Width, token, note));
-                gu.stepAhead(note.Duration() / token.Divisions * cfg.SingleDurationWidth + noteRectBound.Width);
+                noteRenderInfoTemp.push(NoteRenderInfo.instance(gu.X, _y, gu.CurViewLine, noteRectBound.Width, token, note));
+                gu.stepAhead(Render.getNoteStepXDistance(note.Duration(), token.Divisions, cfg.SingleDurationWidth, noteRectBound.Width));
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
                 const backDistance = (() => {
@@ -82,8 +99,8 @@ export class Render {
             // TODO
         }
         Render.completeRenderMeasureNotes(
-            noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth
-            , cfg.LineWidth * 3 , cfg.LineSpace , cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor
+            noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth , cfg.LineWidth * 3 
+            , cfg.LineSpace , cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, gu.getYStepDistance(), cfg.LineColor
         );
     }
 
@@ -138,12 +155,13 @@ export class Render {
      * @param {number} lineSpace
      * @param {number} noteBeamSlopeFactor
      * @param {string} beamInfoFrom 符杠连接信息来自于 musicxml | auto
+     * @param {number} yStepDistance    y轴方向上前进一步（也就是换行）所需的距离
      * @param {string} colorHex
      * @memberof Render
      */
     private static completeRenderMeasureNotes(
         noteRenderInfos: NoteRenderInfo[], shape: Shape, beats: number, beatType: number, noteStemHeight: number, noteStemWidth: number
-        , noteBeamWidth: number , lineSpace: number, noteBeamSlopeFactor: number, beamInfoFrom: string, colorHex: string
+        , noteBeamWidth: number, lineSpace: number, noteBeamSlopeFactor: number, beamInfoFrom: string, yStepDistance: number, colorHex: string
     ) {
         // 设4分音符长度为1，在一组连体音符中有多少个4分音符长度
         const quarterCountInSiamesed: number = RenderHelper.computeQuarterCountInSiamesed(beats, beatType);
@@ -165,7 +183,7 @@ export class Render {
                             || ( nri.BeamType == 2 && (noteRenderInfos[_end+1] && noteRenderInfos[_end+1].BeamType != 2) )
                         ) break;
                     }
-                    Render.renderSiamesedNotes(noteRenderInfos, _start, _end, shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, colorHex);
+                    Render.renderTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
                     i = _end;
                     continue;
                 }
@@ -186,7 +204,7 @@ export class Render {
                             break;
                         timeLen += tl;
                     }
-                    Render.renderSiamesedNotes(noteRenderInfos, _start, _end - 1, shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, colorHex);
+                    Render.renderTupletNotes(noteRenderInfos.slice(_start, _end), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
                     i = _end - 1;
                     continue;
                 }
@@ -196,7 +214,7 @@ export class Render {
             for (; _end < noteRenderInfos.length; _end++)
                 if ( _end == noteRenderInfos.length - 1 || !noteRenderInfos[_end + 1].IsChord) 
                     break;
-            Render.renderSiamesedNotes(noteRenderInfos, _start, _end, shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, colorHex);
+            Render.renderTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
             i = _end;
         }
     }
@@ -223,10 +241,10 @@ export class Render {
     }
 
     /**
-     * 渲染4分音符长度内的音符的符桿、符杠
+     * 渲染连音音符的符桿、符杠
      * @private
      * @static
-     * @param {NoteRenderInfo[]} noteRenderInfos  本小节的音符渲染信息
+     * @param {NoteRenderInfo[]} noteRenderInfos  要渲染的一组连音音符信息
      * @param {number} start   包括
      * @param {number} end     包括
      * @param {number} noteStemHeight   符桿高度 
@@ -234,57 +252,71 @@ export class Render {
      * @param {number} noteBeamWidth    符杠宽度
      * @param {number} singleBeamLength
      * @param {number} noteBeamSlopeFactor 符杠倾斜系数 0~1
+     * @param {number} yStepDistance    y轴方向上前进一步（也就是换行）所需的距离
      * @param {string} colorHex
+     * @param {number} tangent  符杠倾斜角度的正切值（可空）
      * @memberof Render
      */
-    private static renderSiamesedNotes(
-        noteRenderInfos: NoteRenderInfo[], start: number, end: number, shape: Shape, noteStemHeight: number, noteStemWidth: number
-        , noteBeamWidth: number , lineSpace: number, singleBeamLength: number, noteBeamSlopeFactor: number, colorHex: string
+    private static renderTupletNotes(
+        noteRenderInfos: NoteRenderInfo[], shape: Shape, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number
+        , lineSpace: number, singleBeamLength: number, noteBeamSlopeFactor: number, yStepDistance: number, colorHex: string, tangent?: number
     ) {
+        let nris: NoteRenderInfo[] = noteRenderInfos;
         // 符桿朝上吗？1 是下；-1是上
-        const stemDire: number = noteRenderInfos[start].Stem == 'up' ? -1 : 1;
+        const stemDire: number = nris[0].Stem == 'up' ? -1 : 1;
 
         // 只有一个音符 || 只有一组和弦
-        if (start == end || noteRenderInfos[end].X - noteRenderInfos[start].X == 0) {
-            const nri: NoteRenderInfo = noteRenderInfos[start];
-            const y = ( () => Math.min( ...noteRenderInfos.slice(start, end+1).map(n => n.Y * stemDire) ) * stemDire )();
+        if (nris.length == 0 || nris[nris.length - 1].X - nris[0].X == 0) {
+            const nri: NoteRenderInfo = nris[0];
+            const y = (() => Math.min(...nris.map(n => n.Y * stemDire)) * stemDire)();
             // 渲染符桿
             // 符桿长度
-            const stemHeight: number = (noteStemHeight + Math.abs(noteRenderInfos[end].Y - noteRenderInfos[start].Y)) * (stemDire);
+            const stemHeight: number = (noteStemHeight + Math.abs(nris[nris.length - 1].Y - nris[0].Y)) * (stemDire);
             shape.drawVerticalLine(nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y, stemHeight, noteStemWidth, colorHex);
             // 渲染符尾
             const count: number = RenderHelper.computeTailCount(nri.IsDot, nri.Duration, nri.Divisions);
-            Render.renderNoteTails(shape, nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y+stemHeight, stemDire, count, lineSpace, colorHex);
+            Render.renderNoteTails(shape, nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y + stemHeight, stemDire, count, lineSpace, colorHex);
             return;
         }
 
         // 符杠倾斜角度的正切值
-        const tan = (noteRenderInfos[end].Y - noteRenderInfos[start].Y) / (noteRenderInfos[end].X - noteRenderInfos[start].X) * noteBeamSlopeFactor;
+        const tan = tangent || (() => {
+            const s = nris[0], e = nris[nris.length - 1];
+            let endY = e.Y;
+            if (e.ViewLine != s.ViewLine)
+                endY -= (e.ViewLine - s.ViewLine) * yStepDistance;
+            return (endY - s.Y) / (e.X - s.X) * noteBeamSlopeFactor;
+        })();
         // 初始符杠基准点Y
         let baseTailY: number = (() => {
-            let high: NoteRenderInfo= noteRenderInfos[start];
-            let low: NoteRenderInfo= noteRenderInfos[start];
+            let high: NoteRenderInfo = nris[0];
+            let low: NoteRenderInfo = nris[0];
             // 符桿朝上就取最高的，朝下就取最低的
-            for (let i = start + 1; i <= end; i++) {
-                const nri: NoteRenderInfo = noteRenderInfos[i];
-                if (nri.Y > low.Y) low   = nri;
+            for (let i = 1; i <= nris.length - 1; i++) {
+                const nri: NoteRenderInfo = nris[i];
+                if (nri.Y > low.Y) low = nri;
                 if (nri.Y < high.Y) high = nri;
             }
             const target: NoteRenderInfo = stemDire == -1 ? high : low;
-            return target.Y - (target.X - noteRenderInfos[start].X) * tan + (noteStemHeight * stemDire);
+            return target.Y - (target.X - nris[0].X) * tan + (noteStemHeight * stemDire);
         })();
-        const noteHeadOffsetX = Math.floor(noteRenderInfos[start].HeadWidth / 2) * (-stemDire);
         // 初始符杠基准点X
-        let baseTailX: number = noteRenderInfos[start].X + noteHeadOffsetX;
+        let baseTailX: number = nris[0].X + Math.floor(nris[0].HeadWidth / 2) * (-stemDire);
 
-        const [_start, firstNoteInfo]: [number,NoteRenderInfo] = RenderHelper.mergeChordNoteRenderInfo(start, end, noteRenderInfos, stemDire);
+        const [_start, firstNoteInfo]: [number, NoteRenderInfo] = RenderHelper.mergeChordNoteRenderInfo(0, nris.length - 1, nris, stemDire);
         let prevprev: NoteRenderInfo = null;
         let prev: NoteRenderInfo = firstNoteInfo;
-        for (let i = _start + 1; i < noteRenderInfos.length + 1 && i <= end + 1; i++) {
+        for (let i = _start + 1; i <= nris.length; i++) {
             let self: NoteRenderInfo = null;
             /* 多个和弦音处理成一个，最后一个用没有实际意义的虚拟音占位 */
-            [i, self] = (i != end + 1) ? RenderHelper.mergeChordNoteRenderInfo(i, end, noteRenderInfos, stemDire) //
-                                       : [i, NoteRenderInfo.instanceVirtual(prev.Divisions)];
+            [i, self] = (i != nris.length) ? RenderHelper.mergeChordNoteRenderInfo(i, nris.length - 1, nris, stemDire)
+                                           : [i, NoteRenderInfo.instanceVirtual(prev.ViewLine)];
+
+            const noteHeadOffsetX = Math.floor(self.HeadWidth / 2) * (-stemDire);
+            if (self.ViewLine != prev.ViewLine) {
+                Render.renderTupletNotes(nris.slice(i), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, singleBeamLength, noteBeamSlopeFactor, yStepDistance, colorHex, tan);
+                return;
+            }
 
             const prevBeamCount: number = RenderHelper.computeTailCount(prev.IsDot, prev.Duration, prev.Divisions);
             const selfBeamCount: number = RenderHelper.computeTailCount(self.IsDot, self.Duration, self.Divisions);
@@ -292,7 +324,9 @@ export class Render {
             let _y = baseTailY;
 
             /* 渲染前一个音符的符桿 */
-            shape.drawLine(baseTailX, prev.Y, baseTailX, baseTailY, noteStemWidth, colorHex);
+            if (prev.HeadWidth != 0) {
+                shape.drawLine(baseTailX, prev.Y, baseTailX, baseTailY, noteStemWidth, colorHex);
+            }
 
             /* 渲染当前和前一个公共的符杠 */
             for (let c = 0; c < commBeamCount; c++, _y += noteBeamWidth * 2 * (-stemDire)) {
@@ -302,12 +336,12 @@ export class Render {
             /* 渲染前一个不相连的符杠 */
             // beamDire: 朝向哪里，1朝右，-1朝左, singleBeamCount: 代表前一个不相连的符杠有几条，overBeamCount: 代表应该跳过几条符杠
             const [beamDire, singleBeamCount, overBeamCount]: number[] = ((): number[] => {
-                if (i == _start + 1) 
+                if (i == _start + 1)
                     return [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
                 const prevprevBeamCount = prevprev != null ? RenderHelper.computeTailCount(prevprev.IsDot, prevprev.Duration, prevprev.Divisions) : 0;
-                return (prevprevBeamCount >= selfBeamCount) ? 
-                                                [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] //
-                                                : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
+                return (prevprevBeamCount >= selfBeamCount) ?
+                    [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] //
+                    : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
             })();
             for (let v = 0; v < overBeamCount; v++) // 跳过的符杠
                 _y += noteBeamWidth * 2 * (-stemDire);
@@ -356,6 +390,7 @@ export class Render {
                 }
             });
             gu.stepAhead(startX);
+            gu.CurViewLine ++;
         }
         // 如果是小节开始...
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;
@@ -363,7 +398,7 @@ export class Render {
             // 画上一小节内符桿、符尾、符杠
             Render.completeRenderMeasureNotes(
                 noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7 , cfg.LineWidth
-                , cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, cfg.LineColor
+                , cfg.LineWidth * 3, cfg.LineSpace, cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, gu.getYStepDistance(), cfg.LineColor
             );
             noteRenderInfoTemp = [];
             measureAltersTemp = RenderHelper.MEASURE_ALTER_SET[token.Fifths];
@@ -604,5 +639,20 @@ export class Render {
             const ledgerLineX: number = x - lineLength / 2;
             shape.drawMultiHorizontalLine(ledgerLineX, ledgerLineY, lineLength, lineWidth, fillColorHex, ledgerLineCount, ledgerLineDire, lineSpace);
         }
+    }
+
+    /**
+     * 获取渲染音符后x坐标向右移动的距离
+     * @private
+     * @static
+     * @param {number} duration
+     * @param {number} divisions
+     * @param {number} singleDurationWidth
+     * @param {number} noteWidth
+     * @returns {number}
+     * @memberof Render
+     */
+    private static getNoteStepXDistance(duration: number, divisions: number, singleDurationWidth: number, noteWidth: number): number {
+        return duration / divisions * singleDurationWidth + noteWidth;
     }
 }
