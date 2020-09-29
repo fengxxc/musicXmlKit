@@ -2,29 +2,57 @@ import NoteRenderInfo from "./noteRenderInfo";
 
 export default class RenderHelper {
     /**
+     * musicXml中fifths值说明：
+     * 数字     大调    小调
+     * 0        C       A
+     * 1        G       E
+     * 2        D       B
+     * 3        A       #F
+     * 4        E       #C
+     * 5/-7     B/bC    #G/bA
+     * 6/-6     #F/bG   #D/bE
+     * 7/-5     #C/bD   #A/bB
+     * -4       bA      F
+     * -3       bE      C
+     * -2       bB      G
+     * -1       F       D
+     */
+
+    /**
+     * 各五度的调号对应在五线谱上第几根线
+     * @static
+     * @type {Record<string, number[]>}
+     * @memberof RenderHelper
+     */
+    public static FIFTH_TO_KEY_LINES_ON_G: Record<string, number[]> = {
+        /**
+         * key是fifths值，正数代表是'#'，负数代表'b'
+         * value是数组；后面的数字代表位置在五线谱上第几线（+.5就是间）
+         */
+        '0' : [],
+        '1' : [5],
+        '2' : [5, 3.5],
+        '3' : [5, 3.5, 5.5],
+        '4' : [5, 3.5, 5.5, 4],
+        '5' : [5, 3.5, 5.5, 4, 2.5],
+        '6' : [5, 3.5, 5.5, 4, 2.5, 4.5],
+        '7' : [5, 3.5, 5.5, 4, 2.5, 4.5, 3],
+        '-7': [3, 4.5, 2.5, 4, 2, 3.5, 1.5],
+        '-6': [3, 4.5, 2.5, 4, 2, 3.5],
+        '-5': [3, 4.5, 2.5, 4, 2],
+        '-4': [3, 4.5, 2.5, 4],
+        '-3': [3, 4.5, 2.5],
+        '-2': [3, 4.5],
+        '-1': [3]
+    }
+
+    /**
      * 各五度的升降号信息
      * @static
      * @type {Record<string, Record<string, number>>}
      * @memberof RenderHelper
      */
     public static MEASURE_ALTER_SET: Record<string, Record<string, number>> = {
-        /**
-         * musicXml中fifths值说明：
-         * 数字     大调    小调
-         * 0        C       A
-         * 1        G       E
-         * 2        D       B
-         * 3        A       #F
-         * 4        E       #C
-         * 5/-7     B/bC    #G/bA
-         * 6/-6     #F/bG   #D/bE
-         * 7/-5     #C/bD   #A/bB
-         * -4       bA    F
-         * -3       bE      C
-         * -2       bB      G
-         * -1       F       D
-         */
-
         '0' : {},
         '1' : {'F': 1},
         '2' : {'C': 1, 'F': 1},
@@ -74,10 +102,13 @@ export default class RenderHelper {
     /**
      * 获取音符在五线谱上的位置
      * 例如：在一线上，返回就是1；在一间上，返回就是1.5；在下加一线上，返回就是0
-     * @param step 本音符的音名
-     * @param octave 本音符在第几个八度
-     * @param clefSign 本小节谱号
-     * @param clefLine 本小节谱号所在第几线上
+     * @static
+     * @param {string} step 本音符的音名
+     * @param {number} octave 本音符在第几个八度
+     * @param {string} clefSign 本小节谱号
+     * @param {number} clefLine 本小节谱号所在第几线上
+     * @returns {number}
+     * @memberof RenderHelper
      */
     static getLineByPitchSign(step: string, octave: number, clefSign: string, clefLine: number): number {
         let res: number = 0;
@@ -103,10 +134,10 @@ export default class RenderHelper {
      * @static
      * @param {number} beats 一小节有几拍
      * @param {number} beatType 以几分音符为一拍
-     * @returns
+     * @returns {number}
      * @memberof Render
      */
-    static computeQuarterCountInSiamesed(beats: number, beatType: number) {
+    static computeQuarterCountInSiamesed(beats: number, beatType: number): number {
         // const eighthCount: number = 8 / down * up;
         if (beatType >= 8)
             if (beats % 3 == 0) return 1.5;
@@ -123,10 +154,10 @@ export default class RenderHelper {
      * @param {boolean} isDot 是附点音符吗
      * @param {number} duration 持续时间长度。我的理解是：该音符是几个dicisions，所以，dutation / dicisions的值，就是几个4分音符的时值长度
      * @param {number} divisions 本小节每个4分音符的分割数。我的理解是：本小节时值最小的元素占一个四分音符的几分之一
-     * @returns
+     * @returns {number}
      * @memberof RenderHelper
      */
-    static computeTailCount(isDot: boolean, duration: number, divisions: number) {
+    static computeTailCount(isDot: boolean, duration: number, divisions: number): number {
         if (duration <= 0) return 0;
         const durationWithoutDot: number = isDot ? duration * 2 / 3 : duration;
         return Math.log(0.5 / (durationWithoutDot / divisions)) / Math.log(2) + 1;
@@ -154,5 +185,22 @@ export default class RenderHelper {
             index++;
         }
         return [index, target];
+    }
+
+    /**
+     * 符杠倾斜角度的正切值
+     * @static
+     * @param {NoteRenderInfo} start
+     * @param {NoteRenderInfo} end
+     * @param {number} yStepDistance        y轴方向上前进一步（也就是换行）所需的距离
+     * @param {number} noteBeamSlopeFactor  符杠倾斜系数 0~1
+     * @returns {number}
+     * @memberof RenderHelper
+     */
+    static computeBeamTangent(start: NoteRenderInfo, end: NoteRenderInfo, yStepDistance: number, noteBeamSlopeFactor: number): number {
+        let endY = end.Y;
+        if (end.ViewLine != start.ViewLine)
+            endY -= (end.ViewLine - start.ViewLine) * yStepDistance;
+        return (endY - start.Y) / (end.X - start.X) * noteBeamSlopeFactor;
     }
 }

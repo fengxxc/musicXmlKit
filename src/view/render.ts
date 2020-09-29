@@ -98,10 +98,8 @@ export class Render {
             }
             // TODO
         }
-        Render.completeRenderMeasureNotes(
-            noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth , cfg.LineWidth * 3 
-            , cfg.LineSpace , cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, gu.getYStepDistance(), cfg.LineColor
-        );
+        Render.completeRenderMeasureNotes(noteRenderInfoTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth , cfg.LineWidth * 3 
+                                            , cfg.LineSpace , cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, gu.getYStepDistance(), cfg.LineColor);
     }
 
     /**
@@ -165,7 +163,6 @@ export class Render {
     ) {
         // 设4分音符长度为1，在一组连体音符中有多少个4分音符长度
         const quarterCountInSiamesed: number = RenderHelper.computeQuarterCountInSiamesed(beats, beatType);
-        // console.log(quarterCountInSiamesed);
         let _start: number = 0, _end: number = 0;
         for (let i = 0; i < noteRenderInfos.length; i++) {
             const noteInfo: NoteRenderInfo = noteRenderInfos[i];
@@ -174,7 +171,6 @@ export class Render {
             // 根据musicXml里的beam标签划分相连的符杠
             if (beamInfoFrom == 'musicxml') {
                 if (noteInfo.BeamType == 1) {
-                    // shape.drawPoint(noteInfo.X, noteInfo.Y, 2, '#0f0', '#0f0')
                     _start = _end = i;
                     for (; _end < noteRenderInfos.length; _end++) {
                         const nri: NoteRenderInfo = noteRenderInfos[_end];
@@ -183,7 +179,8 @@ export class Render {
                             || ( nri.BeamType == 2 && (noteRenderInfos[_end+1] && noteRenderInfos[_end+1].BeamType != 2) )
                         ) break;
                     }
-                    Render.renderTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
+                    Render.renderTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
+                                                , lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
                     i = _end;
                     continue;
                 }
@@ -204,7 +201,8 @@ export class Render {
                             break;
                         timeLen += tl;
                     }
-                    Render.renderTupletNotes(noteRenderInfos.slice(_start, _end), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
+                    Render.renderTupletNotes(noteRenderInfos.slice(_start, _end), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
+                                                , lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
                     i = _end - 1;
                     continue;
                 }
@@ -214,7 +212,8 @@ export class Render {
             for (; _end < noteRenderInfos.length; _end++)
                 if ( _end == noteRenderInfos.length - 1 || !noteRenderInfos[_end + 1].IsChord) 
                     break;
-            Render.renderTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
+            Render.renderTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
+                                        , lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
             i = _end;
         }
     }
@@ -280,13 +279,7 @@ export class Render {
         }
 
         // 符杠倾斜角度的正切值
-        const tan = tangent || (() => {
-            const s = nris[0], e = nris[nris.length - 1];
-            let endY = e.Y;
-            if (e.ViewLine != s.ViewLine)
-                endY -= (e.ViewLine - s.ViewLine) * yStepDistance;
-            return (endY - s.Y) / (e.X - s.X) * noteBeamSlopeFactor;
-        })();
+        const tan = tangent || RenderHelper.computeBeamTangent(nris[0], nris[nris.length - 1], yStepDistance, noteBeamSlopeFactor);
         // 初始符杠基准点Y
         let baseTailY: number = (() => {
             let high: NoteRenderInfo = nris[0];
@@ -294,7 +287,7 @@ export class Render {
             // 符桿朝上就取最高的，朝下就取最低的
             for (let i = 1; i <= nris.length - 1; i++) {
                 const nri: NoteRenderInfo = nris[i];
-                if (nri.Y > low.Y) low = nri;
+                if (nri.Y > low.Y) low   = nri;
                 if (nri.Y < high.Y) high = nri;
             }
             const target: NoteRenderInfo = stemDire == -1 ? high : low;
@@ -314,7 +307,8 @@ export class Render {
 
             const noteHeadOffsetX = Math.floor(self.HeadWidth / 2) * (-stemDire);
             if (self.ViewLine != prev.ViewLine) {
-                Render.renderTupletNotes(nris.slice(i), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, singleBeamLength, noteBeamSlopeFactor, yStepDistance, colorHex, tan);
+                Render.renderTupletNotes(nris.slice(i), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
+                                            , lineSpace, singleBeamLength, noteBeamSlopeFactor, yStepDistance, colorHex, tan);
                 return;
             }
 
@@ -340,8 +334,8 @@ export class Render {
                     return [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
                 const prevprevBeamCount = prevprev != null ? RenderHelper.computeTailCount(prevprev.IsDot, prevprev.Duration, prevprev.Divisions) : 0;
                 return (prevprevBeamCount >= selfBeamCount) ?
-                    [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] //
-                    : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
+                                                [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] //
+                                                : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
             })();
             for (let v = 0; v < overBeamCount; v++) // 跳过的符杠
                 _y += noteBeamWidth * 2 * (-stemDire);
@@ -385,9 +379,7 @@ export class Render {
                 shape.drawMultiHorizontalLine(_x, _y, cfg.ContentWidth, cfg.LineWidth, cfg.LineColor, 5, 1 , cfg.LineSpace);
                 // 画谱号
                 const cRb: RectBound = Render.renderClefSign(shape, c.Sign, _x += cfg.RowLeftPadding, _y + cfg.Stave5Height - (c.Line - 1) * cfg.LineSpace, cfg.LineSpace);
-                if (c.Number == 1) {
-                    startX = _x += cRb.Width;
-                }
+                if (c.Number == 1) startX = _x += cRb.Width;
             });
             gu.stepAhead(startX);
             gu.CurViewLine ++;
@@ -402,10 +394,9 @@ export class Render {
             );
             noteRenderInfoTemp = [];
             measureAltersTemp = RenderHelper.MEASURE_ALTER_SET[token.Fifths];
-            if (!isNewRow) {
-                // 画小节分割线
+            if (!isNewRow) // 画小节分割线
                 token.Clefs.forEach(c => shape.drawVerticalLine(gu.X, gu.Y(c.Number), cfg.Stave5Height, cfg.LineWidth, cfg.LineColor));
-            }
+ 
             // 画小节号
             shape.drawText(gu.X, gu.Y(1) - cfg.MeasureNoFontHeight - 2, token.MeasureNo + '', cfg.MeasureNoFontHeight, 'Consolas', cfg.LineColor);
             let overX = cfg.MeasureLeftPadding;
@@ -467,69 +458,30 @@ export class Render {
      * @memberof Render
      */
     private static renderKeySign(shape: Shape, x: number, y: number, fifths: number, mode: string, clefSign: string, clefLine: number, lineSpace: number, colorHex: string): RectBound {
-        /**
-         * musicXml中fifths值说明：
-         * 数字     大调    小调
-         * 0        C       A
-         * 1        G       E
-         * 2        D       B
-         * 3        A       #F
-         * 4        E       #C
-         * 5/-7     B/bC    #G/bA
-         * 6/-6     #F/bG   #D/bE
-         * 7/-5     #C/bD   #A/bB
-         * -4       bA      F
-         * -3       bE      C
-         * -2       bB      G
-         * -1       F       D
-         */
         if (clefSign == 'TAB') // TODO
             return new RectBound(0, 0);
-        const posG: Record<string, number[]> = {
-            /**
-             * key是fifths值，正数代表是'#'，负数代表'b'
-             * value是数组；后面的数字代表位置在五线谱上第几线（+.5就是间）
-             */
-            '0' : [],
-            '1' : [5],
-            '2' : [5, 3.5],
-            '3' : [5, 3.5, 5.5],
-            '4' : [5, 3.5, 5.5, 4],
-            '5' : [5, 3.5, 5.5, 4, 2.5],
-            '6' : [5, 3.5, 5.5, 4, 2.5, 4.5],
-            '7' : [5, 3.5, 5.5, 4, 2.5, 4.5, 3],
-            '-7': [3, 4.5, 2.5, 4, 2, 3.5, 1.5],
-            '-6': [3, 4.5, 2.5, 4, 2, 3.5],
-            '-5': [3, 4.5, 2.5, 4, 2],
-            '-4': [3, 4.5, 2.5, 4],
-            '-3': [3, 4.5, 2.5],
-            '-2': [3, 4.5],
-            '-1': [3]
-        }
+
         // F4: -1; C3: -0.5; C4: +0.5
-        let pos: number[] = posG[fifths];
-        if (pos.length == 0) {
-            return new RectBound(0, 0);
-        }
+        let pos: number[] = RenderHelper.FIFTH_TO_KEY_LINES_ON_G[fifths];
+        if (pos.length == 0) return new RectBound(0, 0);
+
         if (clefSign + clefLine == 'F4') {
-            pos = posG[fifths].map(p => p - 1);
+            pos = RenderHelper.FIFTH_TO_KEY_LINES_ON_G[fifths].map(p => p - 1);
         } else if (clefSign + clefLine == 'C3') {
-            pos = posG[fifths].map(p => p - 0.5);
+            pos = RenderHelper.FIFTH_TO_KEY_LINES_ON_G[fifths].map(p => p - 0.5);
         } else if (clefSign + clefLine == 'C4') {
-            pos = posG[fifths].map(p => p + 0.5);
+            pos = RenderHelper.FIFTH_TO_KEY_LINES_ON_G[fifths].map(p => p + 0.5);
         }
         y += 4 * lineSpace;
         let rb: RectBound = null;
         if (fifths < 0) {
             rb = shape.drawFlat(x, y - (pos[0] - 1) * lineSpace, lineSpace, colorHex);
-            for (let i = 1; i < pos.length; i++) {
+            for (let i = 1; i < pos.length; i++)
                 shape.drawFlat(x += Math.round(rb.Width), y - (pos[i] - 1) * lineSpace, lineSpace, colorHex);
-            }
         } else {
             rb = shape.drawSharp(x, y - (pos[0] - 1) * lineSpace, lineSpace, colorHex);
-            for (let i = 1; i < pos.length; i++) {
+            for (let i = 1; i < pos.length; i++)
                 shape.drawSharp(x += Math.round(rb.Width), y - (pos[i] - 1) * lineSpace, lineSpace, colorHex);
-            }
         }
         return new RectBound(pos.length * rb.Width, rb.Height + (Math.abs(fifths) - 1) * lineSpace);
     }
