@@ -102,7 +102,7 @@ export interface Note extends Durational {
     NotationsTechFret() : number;
 
     /**
-     * 有符点吗？单标签
+     * 有符点吗？
      * @returns {boolean}
      * @memberof Note
      */
