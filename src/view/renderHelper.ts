@@ -203,4 +203,21 @@ export default class RenderHelper {
             endY -= (end.ViewLine - start.ViewLine) * yStepDistance;
         return (endY - start.Y) / (end.X - start.X) * noteBeamSlopeFactor;
     }
+
+    /**
+     * 计算音符头的宽度
+     * @static
+     * @param {number} lineSpace    谱线间距
+     * @param {number} strokeWidth  符头的描边宽度
+     * @param {number} angle        符头倾斜角度
+     * @return {number}
+     * @memberof RenderHelper
+     */
+    static computeNoteHeadWidth(lineSpace: number, strokeWidth: number, angle: number): number {
+        const h = (lineSpace - strokeWidth) / 2;
+        const rad = angle / 180 * Math.PI; // 转成弧度
+        const ra: number = h / (2 * Math.sin(rad));
+        const rb: number = Math.sqrt(3) * h / (2 * Math.cos(rad));
+        return ra * Math.cos(rad) * Math.sqrt(1 + (Math.pow(rb, 2) * Math.pow(Math.tan(rad), 2) / Math.pow(ra, 2))) * 2 + strokeWidth * 2;
+    }
 }

@@ -1,3 +1,5 @@
+import RectBound from "../../src/view/rectBound";
+import RenderHelper from "../../src/view/renderHelper";
 import { Shape } from "../../src/view/shape";
 
 function main() {
@@ -19,17 +21,39 @@ function main() {
     shape.drawLine(x, y + lineDstc*4, 1200, y + lineDstc*4, 1, '#000')
     x += 30
     // shape.drawPoint(420, 30, 1, 'blue', '#000');
-    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 18, 1, '#000', '#000', 0)
+    const angle_18: number = 18;
+    const rb0: RectBound = shape.drawNoteHead(x, y+lineDstc/2, lineDstc, angle_18, 1, '#000', '#000', 0)
+    console.log('rb0 render  width: ' + rb0.Width)
+    console.log('rb0 compute width: ' + RenderHelper.computeNoteHeadWidth(lineDstc, 1, angle_18))
+    console.log('----------------------------------------------------');
+    shape.drawMultiHorizontalLine(x - RenderHelper.computeNoteHeadWidth(lineDstc, 1, angle_18) / 2, y+lineDstc/2, RenderHelper.computeNoteHeadWidth(lineDstc, 1, angle_18), 2, '#0f0', 1, 1, 0)
+
     x += 60
-    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 20, 1, '#000', '#000', 0)
+    const angle_20: number = 20;
+    const rb1: RectBound = shape.drawNoteHead(x, y+lineDstc/2, lineDstc, angle_20, 1, '#000', '#000', 0)
+    console.log('rb1 render  width: ' + rb1.Width)
+    console.log('rb1 compute width: ' + RenderHelper.computeNoteHeadWidth(lineDstc, 1, angle_20))
+    console.log('----------------------------------------------------');
+    shape.drawMultiHorizontalLine(x - RenderHelper.computeNoteHeadWidth(lineDstc, 1, angle_20) / 2, y+lineDstc/2, RenderHelper.computeNoteHeadWidth(lineDstc, 1, angle_20), 2, '#0f0', 1, 1, 0)
+
     x += 60
-    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 22, 1, '#000', '#000', 0)
+    const angle_22: number = 22;
+    const rb2: RectBound = shape.drawNoteHead(x, y+lineDstc/2, lineDstc, angle_22, 1, '#000', '#000', 0)
+    console.log('rb2 render  width: ' + rb2.Width)
+    console.log('rb2 compute width: ' + RenderHelper.computeNoteHeadWidth(lineDstc, 1, angle_22))
+    console.log('----------------------------------------------------');
+
     x += 60
-    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, '#000', '#000', 0)
+    const angle_24: number = 24;
+    const rb3: RectBound = shape.drawNoteHead(x, y+lineDstc/2, lineDstc, angle_24, 1, '#000', '#000', 0)
+    console.log('rb3 render  width: ' + rb3.Width)
+    console.log('rb3 compute width: ' + RenderHelper.computeNoteHeadWidth(lineDstc, 1, angle_24))
+    console.log('----------------------------------------------------');
+
     x += 60
-    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, '#fff', '#000', 2)
+    const rb4: RectBound = shape.drawNoteHead(x, y+lineDstc/2, lineDstc, angle_24, 1, '#fff', '#000', 2)
     x += 60
-    shape.drawNoteHead(x, y+lineDstc/2, lineDstc, 24, 1, 'transparent', '#00f', 2)
+    const rb5: RectBound = shape.drawNoteHead(x, y+lineDstc/2, lineDstc, angle_24, 1, 'transparent', '#00f', 2)
     x += 60
 
     shape.drawClefG(x, y + lineDstc * 3, lineDstc)
