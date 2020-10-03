@@ -8,12 +8,12 @@ export default class Guide {
     // 当前乐谱行高度
     private curMeasureHeight: number;
     // 当前在乐谱的第几行，从1开始
-    private curViewLine: number;
+    private curViewRow: number;
     constructor(cfg: Config) {
         this.cfg = cfg;
         this.oX = cfg.PaddingLeft + 0.5;
         this.oY = cfg.PaddingTop + 0.5;
-        this.curViewLine = 0;
+        this.curViewRow = 0;
     }
 
     public get X(): number {
@@ -66,11 +66,11 @@ export default class Guide {
         return this.curMeasureHeight;
     }
 
-    public set CurViewLine(curViewLine: number) {
-        this.curViewLine = curViewLine;
+    public set CurViewRow(curViewRow: number) {
+        this.curViewRow = curViewRow;
     }
 
-    public get CurViewLine(): number {
-        return this.curViewLine;
+    public get CurViewRow(): number {
+        return this.curViewRow;
     }
 }

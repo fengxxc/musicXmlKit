@@ -35,10 +35,10 @@ export class Render {
                 // 开始渲染音符和他的朋友们
                 const note: Note = <Note>token.Spirit;
                 let _y = gu.Y(note.Staff());
-                let noteRectBound: RectBound = new RectBound(0, 0);
+                let noteWidth: number = 0;
                 if (note.Rest()) {
                     // 画休止符
-                    noteRectBound = Render.renderRestSign(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.LineColor);
+                    noteWidth = Render.renderRestSign(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.LineColor).Width;
                 } else {
                     // 画音符
                     const clefToken: ClefToken = token.getClefByNumber(note.Staff());
@@ -50,32 +50,30 @@ export class Render {
                     // 画符头
                     if (
                         noteRenderInfoTemp.length > 0
-                        && gu.CurViewLine != noteRenderInfoTemp[noteRenderInfoTemp.length - 1].ViewLine
+                        && gu.CurViewRow != noteRenderInfoTemp[noteRenderInfoTemp.length - 1].ViewRow
                         && note.Beams()[0] != 'begin'
                     ) {
                         const prev = noteRenderInfoTemp[noteRenderInfoTemp.length - 1];
                         // 到右边距了，必须换行了，那就用两个虚拟音分割成两组
-                        // 具体的渲染策略是：当前复制一个（虚拟音）放到本行最后；上一个复制一个（虚拟音）放到下一行开头。注意viewLine参数了
-                        const currVirtualEnd = NoteRenderInfo.instanceVirtualDisplayed(cfg.PaddingLeft + cfg.ContentWidth, _y - gu.getYStepDistance(), prev.ViewLine, note.Dot(), note.Duration(), token.Divisions, note.Stem());
-                        const nextVirtualStart = NoteRenderInfo.instanceVirtualDisplayed(gu.X, prev.Y + gu.getYStepDistance(), gu.CurViewLine, prev.IsDot, prev.Duration, prev.Divisions, prev.Stem);
+                        // 具体的渲染策略是：当前复制一个（虚拟音）放到本行最后；上一个复制一个（虚拟音）放到下一行开头。注意viewRow参数
+                        const currVirtualEnd = NoteRenderInfo.instanceVirtualDisplayed(cfg.PaddingLeft + cfg.ContentWidth, _y - gu.getYStepDistance(), prev.ViewRow, note.Dot(), note.Duration(), token.Divisions, note.Stem());
+                        const nextVirtualStart = NoteRenderInfo.instanceVirtualDisplayed(gu.X, prev.Y + gu.getYStepDistance(), gu.CurViewRow, prev.IsDot, prev.Duration, prev.Divisions, prev.Stem);
                         noteRenderInfoTemp.push(currVirtualEnd);
                         noteRenderInfoTemp.push(nextVirtualStart);
                         const xOffset = Render.getNoteStepXDistance(prev.Duration, prev.Divisions, cfg.SingleDurationWidth, prev.HeadWidth) - (cfg.PaddingLeft + cfg.ContentWidth - prev.X);
                         gu.stepAhead(xOffset);
-                        noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
-                    } else {
-                        noteRectBound = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor);
                     }
+                    noteWidth = Render.renderNoteHeader(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.NoteHeadAngle, cfg.LineWidth, cfg.LineColor, cfg.LineColor).Width;
                     // 画升降号（如果有的话）
-                    measureAltersTemp = Render.renderNoteAlter(measureAltersTemp, note, shape, gu, noteRectBound, _y, cfg);
+                    measureAltersTemp = Render.renderNoteAlter(measureAltersTemp, note, shape, gu, noteWidth, _y, cfg);
                     // 画符点
                     if (note.Dot())
-                        shape.drawPoint(gu.X + noteRectBound.Width, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
+                        shape.drawPoint(gu.X + noteWidth, _y + (line%1 - 0.5) * cfg.LineSpace, cfg.LineSpace / 8, cfg.LineColor, cfg.LineColor);
                     // 画加线（如果有的话）
-                    Render.renderLedgerLine(shape, gu.X, _y, line, cfg.LineSpace, noteRectBound.Width * 3 / 2, cfg.LineWidth, cfg.LineColor);
+                    Render.renderLedgerLine(shape, gu.X, _y, line, cfg.LineSpace, noteWidth * 3 / 2, cfg.LineWidth, cfg.LineColor);
                 }
-                noteRenderInfoTemp.push(NoteRenderInfo.instance(gu.X, _y, gu.CurViewLine, noteRectBound.Width, token, note));
-                gu.stepAhead(Render.getNoteStepXDistance(note.Duration(), token.Divisions, cfg.SingleDurationWidth, noteRectBound.Width));
+                noteRenderInfoTemp.push(NoteRenderInfo.instance(gu.X, _y, gu.CurViewRow, noteWidth, token, note));
+                gu.stepAhead(Render.getNoteStepXDistance(note.Duration(), token.Divisions, cfg.SingleDurationWidth, noteWidth));
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
                 const backDistance = (() => {
@@ -110,26 +108,26 @@ export class Render {
      * @param {Note} note
      * @param {Shape} shape
      * @param {Guide} gu
-     * @param {RectBound} noteRectBound
+     * @param {number} noteWidth
      * @param {number} _y
      * @param {Config} cfg
      * @return {Record<string, number>}
      * @memberof Render
      */
-    private static renderNoteAlter(measureAltersTemp: Record<string, number>, note: Note, shape: Shape, gu: Guide, noteRectBound: RectBound, _y: number, cfg: Config): Record<string, number> {
+    private static renderNoteAlter(measureAltersTemp: Record<string, number>, note: Note, shape: Shape, gu: Guide, noteWidth: number, _y: number, cfg: Config): Record<string, number> {
         let alter: number = null;
         [alter, measureAltersTemp] = RenderHelper.getNoteAlter(measureAltersTemp, note.PitchStep(), note.PitchAlter());
         switch (alter) {
             case 2: // TODO 重升
                 break;
             case 1:
-                shape.drawSharp(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+                shape.drawSharp(gu.X - Math.round(noteWidth / 2), _y, cfg.LineSpace, cfg.LineColor);
                 break;
             case 0:
-                shape.drawRestore(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+                shape.drawRestore(gu.X - Math.round(noteWidth / 2), _y, cfg.LineSpace, cfg.LineColor);
                 break;
             case -1:
-                shape.drawFlat(gu.X - Math.round(noteRectBound.Width / 2), _y, cfg.LineSpace, cfg.LineColor);
+                shape.drawFlat(gu.X - Math.round(noteWidth / 2), _y, cfg.LineSpace, cfg.LineColor);
                 break;
             case -2: // TODO 重降
                 break;
@@ -179,7 +177,7 @@ export class Render {
                             || ( nri.BeamType == 2 && (noteRenderInfos[_end+1] && noteRenderInfos[_end+1].BeamType != 2) )
                         ) break;
                     }
-                    Render.renderTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
+                    Render.renderSingleOrTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
                                                 , lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
                     i = _end;
                     continue;
@@ -201,7 +199,7 @@ export class Render {
                             break;
                         timeLen += tl;
                     }
-                    Render.renderTupletNotes(noteRenderInfos.slice(_start, _end), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
+                    Render.renderSingleOrTupletNotes(noteRenderInfos.slice(_start, _end), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
                                                 , lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
                     i = _end - 1;
                     continue;
@@ -212,7 +210,7 @@ export class Render {
             for (; _end < noteRenderInfos.length; _end++)
                 if ( _end == noteRenderInfos.length - 1 || !noteRenderInfos[_end + 1].IsChord) 
                     break;
-            Render.renderTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
+            Render.renderSingleOrTupletNotes(noteRenderInfos.slice(_start, _end + 1), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
                                         , lineSpace, noteInfo.HeadWidth / 2, noteBeamSlopeFactor, yStepDistance, colorHex);
             i = _end;
         }
@@ -250,49 +248,24 @@ export class Render {
      * @param {number} noteStemWidth    符桿宽度
      * @param {number} noteBeamWidth    符杠宽度
      * @param {number} singleBeamLength
-     * @param {number} noteBeamSlopeFactor 符杠倾斜系数 0~1
+     * @param {number} beamSlopeFactor  符杠倾斜系数 0~1
      * @param {number} yStepDistance    y轴方向上前进一步（也就是换行）所需的距离
      * @param {string} colorHex
      * @param {number} tangent  符杠倾斜角度的正切值（可空）
      * @memberof Render
      */
-    private static renderTupletNotes(
+    private static renderSingleOrTupletNotes(
         noteRenderInfos: NoteRenderInfo[], shape: Shape, noteStemHeight: number, noteStemWidth: number, noteBeamWidth: number
-        , lineSpace: number, singleBeamLength: number, noteBeamSlopeFactor: number, yStepDistance: number, colorHex: string, tangent?: number
+        , lineSpace: number, singleBeamLength: number, beamSlopeFactor: number, yStepDistance: number, colorHex: string, tangent?: number
     ) {
         let nris: NoteRenderInfo[] = noteRenderInfos;
         // 符桿朝上吗？1 是下；-1是上
         const stemDire: number = nris[0].Stem == 'up' ? -1 : 1;
 
-        // 只有一个音符 || 只有一组和弦
-        if (nris.length == 0 || nris[nris.length - 1].X - nris[0].X == 0) {
-            const nri: NoteRenderInfo = nris[0];
-            const y = (() => Math.min(...nris.map(n => n.Y * stemDire)) * stemDire)();
-            // 渲染符桿
-            // 符桿长度
-            const stemHeight: number = (noteStemHeight + Math.abs(nris[nris.length - 1].Y - nris[0].Y)) * (stemDire);
-            shape.drawVerticalLine(nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y, stemHeight, noteStemWidth, colorHex);
-            // 渲染符尾
-            const count: number = RenderHelper.computeTailCount(nri.IsDot, nri.Duration, nri.Divisions);
-            Render.renderNoteTails(shape, nri.X + Math.floor(nri.HeadWidth / 2) * (-stemDire), y + stemHeight, stemDire, count, lineSpace, colorHex);
-            return;
-        }
-
         // 符杠倾斜角度的正切值
-        const tan = tangent || RenderHelper.computeBeamTangent(nris[0], nris[nris.length - 1], yStepDistance, noteBeamSlopeFactor);
+        const tan = tangent || RenderHelper.computeBeamTangent(nris[0], nris[nris.length - 1], yStepDistance, beamSlopeFactor);
         // 初始符杠基准点Y
-        let baseTailY: number = (() => {
-            let high: NoteRenderInfo = nris[0];
-            let low: NoteRenderInfo = nris[0];
-            // 符桿朝上就取最高的，朝下就取最低的
-            for (let i = 1; i <= nris.length - 1; i++) {
-                const nri: NoteRenderInfo = nris[i];
-                if (nri.Y > low.Y) low   = nri;
-                if (nri.Y < high.Y) high = nri;
-            }
-            const target: NoteRenderInfo = stemDire == -1 ? high : low;
-            return target.Y - (target.X - nris[0].X) * tan + (noteStemHeight * stemDire);
-        })();
+        let baseTailY: number = RenderHelper.computeTupletNotesBaseTailY(nris, stemDire, tan, noteStemHeight);
         // 初始符杠基准点X
         let baseTailX: number = nris[0].X + Math.floor(nris[0].HeadWidth / 2) * (-stemDire);
 
@@ -303,46 +276,46 @@ export class Render {
             let self: NoteRenderInfo = null;
             /* 多个和弦音处理成一个，最后一个用没有实际意义的虚拟音占位 */
             [i, self] = (i != nris.length) ? RenderHelper.mergeChordNoteRenderInfo(i, nris.length - 1, nris, stemDire)
-                                           : [i, NoteRenderInfo.instanceVirtual(prev.ViewLine)];
-
+                                           : [i, NoteRenderInfo.instanceVirtual(prev.ViewRow)];
             const noteHeadOffsetX = Math.floor(self.HeadWidth / 2) * (-stemDire);
-            if (self.ViewLine != prev.ViewLine) {
-                Render.renderTupletNotes(nris.slice(i), shape, noteStemHeight, noteStemWidth, noteBeamWidth //
-                                            , lineSpace, singleBeamLength, noteBeamSlopeFactor, yStepDistance, colorHex, tan);
-                return;
-            }
-
+            if (self.ViewRow != prev.ViewRow) 
+                return Render.renderSingleOrTupletNotes(nris.slice(i), shape, noteStemHeight, noteStemWidth, noteBeamWidth, lineSpace, singleBeamLength, beamSlopeFactor, yStepDistance, colorHex, tan);
+ 
             const prevBeamCount: number = RenderHelper.computeTailCount(prev.IsDot, prev.Duration, prev.Divisions);
             const selfBeamCount: number = RenderHelper.computeTailCount(self.IsDot, self.Duration, self.Divisions);
             const commBeamCount: number = Math.min(prevBeamCount, selfBeamCount);
             let _y = baseTailY;
 
             /* 渲染前一个音符的符桿 */
-            if (prev.HeadWidth != 0) {
+            if (prev.HeadWidth != 0) // 若前一个音符不是虚拟音
                 shape.drawLine(baseTailX, prev.Y, baseTailX, baseTailY, noteStemWidth, colorHex);
-            }
 
             /* 渲染当前和前一个公共的符杠 */
-            for (let c = 0; c < commBeamCount; c++, _y += noteBeamWidth * 2 * (-stemDire)) {
+            for (let c = 0; c < commBeamCount; c++, _y += noteBeamWidth * 2 * (-stemDire)) 
                 shape.drawLine(baseTailX, _y, self.X + noteHeadOffsetX, _y + (self.X + noteHeadOffsetX - baseTailX) * tan, noteBeamWidth, colorHex)
-            }
 
-            /* 渲染前一个不相连的符杠 */
+            /* 渲染前一个不相连的符杠 || 渲染符尾 */
             // beamDire: 朝向哪里，1朝右，-1朝左, singleBeamCount: 代表前一个不相连的符杠有几条，overBeamCount: 代表应该跳过几条符杠
             const [beamDire, singleBeamCount, overBeamCount]: number[] = ((): number[] => {
-                if (i == _start + 1)
-                    return [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
+                if (i == _start + 1) return [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
                 const prevprevBeamCount = prevprev != null ? RenderHelper.computeTailCount(prevprev.IsDot, prevprev.Duration, prevprev.Divisions) : 0;
-                return (prevprevBeamCount >= selfBeamCount) ?
-                                                [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] //
-                                                : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
+                return (prevprevBeamCount >= selfBeamCount) ? [-1, Math.max(prevBeamCount - prevprevBeamCount, 0), prevprevBeamCount - selfBeamCount] //
+                                                            : [1, Math.max(prevBeamCount - selfBeamCount, 0), 0];
             })();
-            for (let v = 0; v < overBeamCount; v++) // 跳过的符杠
-                _y += noteBeamWidth * 2 * (-stemDire);
-            for (let s = 0; s < singleBeamCount; s++, _y += noteBeamWidth * 2 * (-stemDire)) {
-                shape.drawLine(baseTailX, _y, baseTailX + singleBeamLength * beamDire, _y + singleBeamLength * tan * beamDire, noteBeamWidth, colorHex);
-            }
 
+            // 跳过的符杠
+            for (let v = 0; v < overBeamCount; v++) _y += noteBeamWidth * 2 * (-stemDire);
+            
+            if (nris[nris.length - 1].X - nris[0].X == 0) {
+                // 只有一个音符 || 只有一组和弦
+                Render.renderNoteTails(shape, nris[0].X + Math.floor(nris[0].HeadWidth / 2) * (-stemDire), _y, stemDire, singleBeamCount, lineSpace, colorHex); 
+                break;
+            } else {
+                // 渲染不相连的符杠
+                for (let s = 0; s < singleBeamCount; s++, _y += noteBeamWidth * 2 * (-stemDire)) 
+                    shape.drawLine(baseTailX, _y, baseTailX + singleBeamLength * beamDire, _y + singleBeamLength * tan * beamDire, noteBeamWidth, colorHex);
+            }
+ 
             /* 符杠基准点置为当前音符的 */
             baseTailY = baseTailY + (self.X + noteHeadOffsetX - baseTailX) * tan;
             baseTailX = self.X + noteHeadOffsetX;
@@ -382,7 +355,7 @@ export class Render {
                 if (c.Number == 1) startX = _x += cRb.Width;
             });
             gu.stepAhead(startX);
-            gu.CurViewLine ++;
+            gu.CurViewRow ++;
         }
         // 如果是小节开始...
         const lastNoteInfo: NoteRenderInfo = noteRenderInfoTemp.length > 0 ? noteRenderInfoTemp[noteRenderInfoTemp.length - 1] : null;

@@ -11,7 +11,6 @@ export class Shape {
         this.ctxDom = ctxDom;
         this.zr = zrender.init(ctxDom);
     }
-
     static Circle(x: number, y: number, r: number, fillColorHex: string, strokeColorHex: string): zrender {
         return new zrender.Circle({
             shape: {
@@ -425,11 +424,16 @@ export class Shape {
         )
     }
 
+    static getWidthHeight(shape: zrender): [number, number] {
+        const br = shape.getBoundingRect();
+        return [br.width * shape.scale[0], br.height * shape.scale[1]];
+    }
+
     draw(shape: zrender): RectBound {
         this.zr.add(shape);
-        // debugger
-        const br = shape.getBoundingRect()
         // test
+        // debugger
+        // const br = shape.getBoundingRect()
         /* this.zr.add(
             new zrender.Rect({
                 shape: {
@@ -445,7 +449,7 @@ export class Shape {
             })
         )
         console.log(br.width, br.height); */
-        return new RectBound(br.width * shape.scale[0], br.height * shape.scale[1]);
+        return new RectBound(...Shape.getWidthHeight(shape));
     }
 
     drawPoint(x: number, y: number, r: number, fillColorHex: string, strokeColorHex: string): RectBound {

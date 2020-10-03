@@ -198,9 +198,10 @@ export default class RenderHelper {
      * @memberof RenderHelper
      */
     static computeBeamTangent(start: NoteRenderInfo, end: NoteRenderInfo, yStepDistance: number, noteBeamSlopeFactor: number): number {
+        if (start.X == end.X) return 0; // 一个音符或者一组和弦音，不需要符杠，故返回0
         let endY = end.Y;
-        if (end.ViewLine != start.ViewLine)
-            endY -= (end.ViewLine - start.ViewLine) * yStepDistance;
+        if (end.ViewRow != start.ViewRow)
+            endY -= (end.ViewRow - start.ViewRow) * yStepDistance;
         return (endY - start.Y) / (end.X - start.X) * noteBeamSlopeFactor;
     }
 
@@ -219,5 +220,28 @@ export default class RenderHelper {
         const ra: number = h / (2 * Math.sin(rad));
         const rb: number = Math.sqrt(3) * h / (2 * Math.cos(rad));
         return ra * Math.cos(rad) * Math.sqrt(1 + (Math.pow(rb, 2) * Math.pow(Math.tan(rad), 2) / Math.pow(ra, 2))) * 2 + strokeWidth * 2;
+    }
+
+    /**
+     * 初始符杠基准点Y
+     *
+     * @static
+     * @param {NoteRenderInfo[]} noteRenderInfos 一组连音音符的信息
+     * @param {number} stemDire 符桿朝上吗？1 是下；-1是上
+     * @param {number} tan 符杠倾斜角度的正切值
+     * @param {number} noteStemHeight   符桿高度
+     * @return {number}
+     * @memberof RenderHelper
+     */
+    static computeTupletNotesBaseTailY(noteRenderInfos: NoteRenderInfo[], stemDire: number, tan: number, noteStemHeight: number): number {
+        let high: NoteRenderInfo = noteRenderInfos[0], low: NoteRenderInfo = noteRenderInfos[0];
+        // 符桿朝上就取最高的，朝下就取最低的
+        for (let i = 1; i <= noteRenderInfos.length - 1; i++) {
+            const nri: NoteRenderInfo = noteRenderInfos[i];
+            if (nri.Y > low.Y)  low  = nri;
+            if (nri.Y < high.Y) high = nri;
+        }
+        const target: NoteRenderInfo = stemDire == -1 ? high : low;
+        return target.Y - (target.X - noteRenderInfos[0].X) * tan + (noteStemHeight * stemDire);
     }
 }
