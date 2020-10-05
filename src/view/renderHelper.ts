@@ -164,30 +164,6 @@ export default class RenderHelper {
     }
 
     /**
-     * 把音符信息数组中一组和弦音处理成一个音，方便渲染符桿和符杠，
-     * 返回1: 和弦音中最后一个的索引
-     * 返回2: 如果符头向上，返回和弦音中音高最低的音符信息，反之，返回最高的
-     * @static
-     * @param {number} startIndex   数组起始索引
-     * @param {number} endIndex     数组结束索引
-     * @param {NoteRenderInfo[]} _noteRenderInfos 音符信息数组
-     * @param {number} _stemDire    符桿朝向: 1是下；-1是上
-     * @returns {[number, NoteRenderInfo]} 见 返回1 与 返回2
-     * @memberof RenderHelper
-     */
-    static mergeChordNoteRenderInfo(startIndex: number, endIndex: number, _noteRenderInfos: NoteRenderInfo[], _stemDire: number): [number, NoteRenderInfo] {
-        let index: number = startIndex;
-        let target: NoteRenderInfo = _noteRenderInfos[index];
-        while (index < _noteRenderInfos.length && index < endIndex && _noteRenderInfos[index + 1].IsChord) {
-            const self: NoteRenderInfo = _noteRenderInfos[index];
-            const next: NoteRenderInfo = _noteRenderInfos[index + 1];
-            target = self.Y * _stemDire < next.Y * _stemDire ? self : next;
-            index++;
-        }
-        return [index, target];
-    }
-
-    /**
      * 符杠倾斜角度的正切值
      * @static
      * @param {NoteRenderInfo} start

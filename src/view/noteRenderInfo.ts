@@ -1,4 +1,4 @@
-import MxToken from "./mxToken";
+import MxToken, { ClefToken } from "./mxToken";
 import { Note } from "../model/interface/note";
 
 export default class NoteRenderInfo {
@@ -11,20 +11,26 @@ export default class NoteRenderInfo {
     private timeBeatType: number;
     // 每小节有几拍
     private timeBeats: number;
+    // 谱号
+    private clefSign: string;
+    // 谱号在第几线
+    private clefLine: number;
+    // 本小节每个4分音符的分割数。我的理解是：本小节时值最小的元素占一个四分音符的几分之一
+    private divisions: number; 
 
     /* 音符信息 */
     // 是否是休止符
     private isRest: boolean;
     // 是否是和弦音，若是，则渲染时x轴不变
     private isChord: boolean;
-    // 本小节每个4分音符的分割数。我的理解是：本小节时值最小的元素占一个四分音符的几分之一
-    private divisions: number; 
     // 持续时间长度。我的理解是：该音符是几个dicisions，所以，dutation / dicisions的值，就是几个4分音符的时值长度
     private duration: number; 
     // 音名
     private pitchStep: string; 
     // 八度
     private pitchOctave: number;
+    // 升降调 ♯: 1; ♭: -1
+    private pitchAlter: number;
     // 符头宽度
     private headWidth: number;
     // 符桿朝向
@@ -42,27 +48,30 @@ export default class NoteRenderInfo {
     // 在画布中的y坐标
     private y: number;
     // 在渲染出的乐谱中第几行，从1开始
-    private viewLine: number;
+    private viewRow: number;
 
     constructor(
-        measureNo: number, fifths: number, timeBeatType: number, timeBeats: number, isRest: boolean , isChord: boolean
-        , divisions: number, duration: number , pitchStep: string, pitchOctave: number , x: number, y: number
-        , viewLine: number, headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]
+        measureNo: number, fifths: number, timeBeatType: number, timeBeats: number, clefSign: string, clefLine: number, isRest: boolean , isChord: boolean
+        , divisions: number, duration: number , pitchStep: string, pitchOctave: number, pitchAlter: number, x: number, y: number
+        , viewRow: number, headWidth: number, stem: string, staff: number, isDot: boolean, beams: string[]
     ) {
 
         this.measureNo = measureNo;
         this.fifths = fifths;
         this.timeBeatType = timeBeatType;
         this.timeBeats = timeBeats;
+        this.clefSign = clefSign;
+        this.clefLine = clefLine;
         this.isRest = isRest;
         this.isChord = isChord;
         this.divisions = divisions;
         this.duration = duration;
         this.pitchStep = pitchStep;
         this.pitchOctave = pitchOctave;
+        this.pitchAlter = pitchAlter;
         this.x = x;
         this.y = y;
-        this.viewLine = viewLine;
+        this.viewRow = viewRow;
         this.headWidth = headWidth;
         this.stem = stem;
         this.staff = staff;
@@ -73,11 +82,12 @@ export default class NoteRenderInfo {
             else if (beams[0] == 'end'  ) this.beamType = 2;
         }
     }
-    public static instance(x: number, y: number, viewLine: number, headWidth: number, token: MxToken, note: Note): NoteRenderInfo {
+    public static instance(x: number, y: number, viewRow: number, headWidth: number, token: MxToken, note: Note): NoteRenderInfo {
+        const clefToken: ClefToken = token.getClefByNumber(note.Staff());
         return new NoteRenderInfo(
-            token.MeasureNo, token.Fifths, token.TimeBeatType, token.TimeBeats, note.Rest()
-            , note.Chord() , token.Divisions , note.Duration() , note.PitchStep() , note.PitchOctave()
-            , x, y, viewLine, headWidth , note.Stem(), note.Staff(), note.Dot(), note.Beams()
+            token.MeasureNo, token.Fifths, token.TimeBeatType, token.TimeBeats, clefToken.Sign, clefToken.Line, note.Rest()
+            , note.Chord() , token.Divisions , note.Duration() , note.PitchStep() , note.PitchOctave(), note.PitchAlter()
+            , x, y, viewRow, headWidth , note.Stem(), note.Staff(), note.Dot(), note.Beams()
         );
     }
 
@@ -87,12 +97,12 @@ export default class NoteRenderInfo {
      * @return {NoteRenderInfo}
      * @memberof NoteRenderInfo
      */
-    public static instanceVirtual(viewLine: number): NoteRenderInfo {
-        return new NoteRenderInfo(0, 0, 0, 0, false, false, 0, 0, '', 0, 0, 0, viewLine, 0, '', 0, false, null);
+    public static instanceVirtual(viewRow: number): NoteRenderInfo {
+        return new NoteRenderInfo(0, 0, 0, 0, '', 0, false, false, 0, 0, '', 0, 0, 0, 0, viewRow, 0, '', 0, false, null);
     }
 
-    public static instanceVirtualDisplayed(x: number, y: number, viewLine: number, isDot: boolean, duration: number, divisions: number, stem: string): NoteRenderInfo {
-        return new NoteRenderInfo(0, 0, 0, 0, false, false, divisions, duration, '', 0, x, y, viewLine, 0, stem, 0, isDot , null);
+    public static instanceVirtualDisplayed(x: number, y: number, viewRow: number, isDot: boolean, duration: number, divisions: number, stem: string): NoteRenderInfo {
+        return new NoteRenderInfo(0, 0, 0, 0, '', 0, false, false, divisions, duration, '', 0, 0, x, y, viewRow, 0, stem, 0, isDot , null);
     }
 
     get MeasureNo(): number { return this.measureNo; }
@@ -103,6 +113,10 @@ export default class NoteRenderInfo {
     set TimeBeatType(timeBeatType: number) { this.timeBeatType = timeBeatType; }
     get TimeBeats(): number { return this.timeBeats; }
     set TimeBeats(timeBeats: number) { this.timeBeats = timeBeats; }
+    get ClefSign(): string { return this.clefSign; }
+    set ClefSign(clefSign: string) { this.clefSign = clefSign; }
+    get ClefLine(): number { return this.clefLine; }
+    set ClefLine(clefLine: number) { this.clefLine = clefLine; }
     get IsRest(): boolean { return this.isRest; }
     set IsRest(isRest: boolean) { this.isRest = isRest; }
     get IsChord(): boolean { return this.isChord; }
@@ -115,12 +129,14 @@ export default class NoteRenderInfo {
     set PitchStep(pitchStep: string) { this.pitchStep = pitchStep; }
     get PitchOctave(): number { return this.pitchOctave; }
     set PitchOctave(pitchOctave: number) { this.pitchOctave = pitchOctave; }
+    get PitchAlter(): number { return this.pitchAlter; }
+    set PitchAlter(pitchAlter: number) { this.pitchAlter = pitchAlter; }
     get X(): number { return this.x; }
     set X(x: number) { this.x = x; }
     get Y(): number { return this.y; }
     set Y(y: number) { this.y = y; }
-    get ViewLine(): number { return this.viewLine; }
-    set ViewLine(viewLine: number) { this.viewLine = viewLine; }
+    get ViewRow(): number { return this.viewRow; }
+    set ViewRow(viewRow: number) { this.viewRow = viewRow; }
     get HeadWidth(): number { return this.headWidth; }
     set HeadWidth(headWidth: number) { this.headWidth = headWidth; }
     get Stem(): string { return this.stem; }
@@ -131,4 +147,6 @@ export default class NoteRenderInfo {
     set IsDot(isDot: boolean) { this.isDot = isDot; }
     get BeamType(): number { return this.beamType; }
     set BeamType(beamType: number) { this.beamType = beamType; }
+
+    public isVirtual(): boolean { return (this.HeadWidth == 0) }
 }
