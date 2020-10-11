@@ -37,17 +37,17 @@ export class Render {
                 let _y = gu.Y(note.Staff());
                 let noteWidth: number = 0;
                 if (note.Rest()) {
-                    // 画休止符
-                    noteWidth = Render.renderRestSign(shape, gu.X, _y, note.Type(), cfg.LineSpace, cfg.LineColor).Width;
+                    // 休止符宽度
+                    noteWidth = Render.getRestSignShapeWidth(note.Type(), cfg.LineSpace, cfg.LineColor);
                 } else {
-                    // 画音符
+                    // 音符宽度
                     const clefToken: ClefToken = token.getClefByNumber(note.Staff());
                     const line: number = RenderHelper.getLineByPitchSign(note.PitchStep(), note.PitchOctave(), clefToken.Sign, clefToken.Line);
                     _y += (cfg.LineSpace * 5) - (line * cfg.LineSpace);
                     // 如果是和弦音，保证横坐标方向上跟上个音符一样
                     if (note.Chord()) // 和弦音在x轴不前进，固退回
                         gu.stepAhead(- Render.getNoteStepXDistance(note.Duration(), token.Divisions, cfg.SingleDurationWidth, noteRenderInfoTemp[noteRenderInfoTemp.length-1].HeadWidth));
-                    // 画符头
+                    // 符头宽度
                     if (
                         noteRenderInfoTemp.length > 0
                         && gu.CurViewRow != noteRenderInfoTemp[noteRenderInfoTemp.length - 1].ViewRow
@@ -160,7 +160,10 @@ export class Render {
         let _start: number = 0, _end: number = 0;
         for (let i = 0; i < noteRenderInfos.length; i++) {
             const noteInfo: NoteRenderInfo = noteRenderInfos[i];
-            if (noteInfo.IsRest) continue;
+            if (noteInfo.IsRest) {
+                Render.renderRestSign(shape, noteInfo.X, noteInfo.Y, noteInfo.Divisions, noteInfo.Duration, lineSpace, colorHex);
+                continue;
+            }
 
             // 根据musicXml里的beam标签划分相连的符杠
             if (beamInfoFrom == 'musicxml') {
@@ -291,18 +294,6 @@ export class Render {
                     if (nris[i].IsDot)
                         shape.drawPoint(nris[i].X + nris[i].HeadWidth, nris[i].Y + (line%1 - 0.5) * lineSpace, lineSpace / 8, colorHex, colorHex); 
                 }
-
-                // self = nris[i];
-                // while (i < nris.length - 1 && nris[i + 1].IsChord) {
-                //     // if (self.MeasureNo == 2) debugger;
-                //     const _self: NoteRenderInfo = nris[i];
-                //     shape.drawText(_self.X+6, _self.Y+0, 's', lineSpace, 'Consolas', colorHex)
-                //     const _next: NoteRenderInfo = nris[i + 1];
-                //     shape.drawText(_next.X+6, _next.Y+0, 'n', lineSpace, 'Consolas', colorHex)
-                //     self = (_self.Y * stemDire < _next.Y * stemDire) ? _self : _next;
-                    // shape.drawText(_self.X+4, _self.Y+8, ((_self.Y * stemDire < _next.Y * stemDire) ? 's' : 'n'), lineSpace, 'Consolas', '#00f')
-                //     i++;
-                // }
 
                 if (i < nris.length - 1 && nris[i + 1].IsChord) {
                     const _self: NoteRenderInfo = nris[i];
@@ -527,30 +518,59 @@ export class Render {
     }
 
     /**
+     * 获取休止符宽度
+     * @private
+     * @static
+     * @param {string} restType 休止符类型 二全: 'breve'; 全: 'whole'; 2分: 'half'; 4分: 'quarter'; 8分: 'eighth';
+     *                                   16分: '16th'; 32分: '32th'; 64分: '64th'; 128分: '128th';
+     * @param {number} lineSpace
+     * @param {string} colorHex
+     * @return {number}
+     * @memberof Render
+     */
+    private static getRestSignShapeWidth(restType: string, lineSpace: number, colorHex: string): number {
+        switch (restType) {
+            case 'quarter': // 四分休止符
+                return Shape.getWidthHeight(Shape.Rest_4(0, 0, lineSpace, colorHex))[0];
+            case 'eighth': // 八分休止符
+                return Shape.getWidthHeight(Shape.Rest_8(0, 0, lineSpace, colorHex))[0];
+            case 'half': // 二分休止符 
+            case 'whole': // 全休止符
+                return Shape.getWidthHeight(Shape.Rest_2(0, 0, lineSpace, colorHex))[0];
+            case '16th': // 十六分休止符
+                return Shape.getWidthHeight(Shape.Rest_16(0, 0, lineSpace, colorHex))[0];
+            default: // TODO 其他分休止符 32、64等
+                return 0;
+        }
+    }
+
+    /**
      * 渲染休止符
      * @private
      * @static
      * @param {Shape} shape
      * @param {number} x
      * @param {number} y
-     * @param {string} restType 休止符类型 二全: 'breve'; 全: 'whole'; 2分: 'half'; 4分: 'quarter'; 8分: 'eighth';
-     *                                   16分: '16th'; 32分: '32th'; 64分: '64th'; 128分: '128th';
+     * @param {number} divisions
+     * @param {number} duration
      * @param {number} lineSpace
      * @param {string} colorHex
-     * @returns {RectBound}
+     * @return {RectBound}
      * @memberof Render
      */
-    private static renderRestSign(shape: Shape, x: number, y: number, restType: string, lineSpace: number, colorHex: string): RectBound {
-        switch (restType) {
-            case 'quarter': // 四分休止符
+    private static renderRestSign(shape: Shape, x: number, y: number, divisions: number, duration: number, lineSpace: number, colorHex: string): RectBound {
+        // dutation / dicisions的值，就是几个4分音符的时值长度
+        const quarterCount: number = duration / divisions;
+        switch (quarterCount) {
+            case 1: // 四分休止符
                 return shape.drawRest_4(x, y + lineSpace * 2, lineSpace, colorHex);
-            case 'eighth': // 八分休止符
+            case 0.5: // 八分休止符
                 return shape.drawRest_8(x, y + lineSpace * 1.5, lineSpace, colorHex);
-            case 'half': // 二分休止符
+            case 2: // 二分休止符
                 return shape.drawRest_2(x, y + lineSpace * 1.5, lineSpace, colorHex);
-            case 'whole': // 全休止符
+            case 4: // 全休止符
                 return shape.drawRest_2(x, y + lineSpace * 1, lineSpace, colorHex);
-            case '16th': // 十六分休止符
+            case 0.25: // 十六分休止符
                 return shape.drawRest_16(x, y + lineSpace * 2, lineSpace, colorHex);
             default: // TODO 其他分休止符 32、64等
                 return null;
@@ -576,7 +596,7 @@ export class Render {
      */
     private static renderNoteHeader(shape: Shape, x: number, y: number, divisions: number, duration: number, lineSpace: number, noteHeadAngle: number, lineWidth: number, fillColorHex: string, strokeColorHex: string): RectBound {
         // dutation / dicisions的值，就是几个4分音符的时值长度
-        const quarterCount = duration / divisions;
+        const quarterCount: number = duration / divisions;
         if (quarterCount >= 2) { // 空心头
             return shape.drawNoteHead(x, y, lineSpace, noteHeadAngle, lineWidth, 'transparent', strokeColorHex, lineWidth * 3/2); // 符头描边宽度先偷个懒 _(:з)∠)_
         } else { // 实心头
