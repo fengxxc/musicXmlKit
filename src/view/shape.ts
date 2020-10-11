@@ -309,6 +309,11 @@ export class Shape {
         })
     }
 
+    static Rest_2(x: number, y: number, scale: number, fillColorHex: string): zrender {
+        const _scale = scale;
+        return Shape.Rect(x - _scale * 1.3 / 2, y, _scale * 1.3, _scale / 2, _scale / 20, fillColorHex);
+    }
+
     /**
      * 4分休止符
      * @param x 
@@ -316,8 +321,8 @@ export class Shape {
      * @param scale 
      * @param fillColorHex 
      */
-    static Rest_4(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
-        const _scale = scale;
+    static Rest_4(x: number, y: number, scale: number, fillColorHex: string): zrender {
+        const _scale = scale / 20;
         return new zrender.path.createFromString(
             // M4.141,0.72
             'M' + (x + 4 - 10) + ',' + (y - 24) // x轴原点设在中间
@@ -339,8 +344,8 @@ export class Shape {
      * @param scale 
      * @param fillColorHex 
      */
-    static Rest_8(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
-        const _scale = scale;
+    static Rest_8(x: number, y: number, scale: number, fillColorHex: string): zrender {
+        const _scale = scale / 20;
         return new zrender.path.createFromString(
             // 'M0,7.74'
             'M' + (x - 10) + ',' + (y - 0) // x轴原点设在中间
@@ -362,8 +367,8 @@ export class Shape {
      * @param scale 
      * @param fillColorHex 
      */
-    static Rest_16(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
-        const _scale = scale;
+    static Rest_16(x: number, y: number, scale: number, fillColorHex: string): zrender {
+        const _scale = scale / 20;
         return new zrender.path.createFromString(
             // 'M20.098,30.893'
             'M' + (x + 16 - 13) + ',' + (y + 19) // x轴原点设在中间
@@ -385,8 +390,8 @@ export class Shape {
      * @param scale 
      * @param fillColorHex 
      */
-    static Rest_32(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
-        const _scale = scale;
+    static Rest_32(x: number, y: number, scale: number, fillColorHex: string): zrender {
+        const _scale = scale / 20;
         return new zrender.path.createFromString(
             // 'M8.169,72.698'
             'M' + (x + 8 - 16) + ',' + (y + 48) // x轴原点设在中间
@@ -408,8 +413,8 @@ export class Shape {
      * @param scale 
      * @param fillColorHex 
      */
-    static Rest_64(x: number, y: number, scale: number = 1, fillColorHex: string): zrender {
-        const _scale = scale;
+    static Rest_64(x: number, y: number, scale: number, fillColorHex: string): zrender {
+        const _scale = scale / 20;
         return new zrender.path.createFromString(
             // 'M9.169,87.698'
             'M' + (x + 8 - 17) + ',' + (y + 63) // x轴原点设在中间
@@ -530,26 +535,26 @@ export class Shape {
     }
 
     drawRest_2(x: number, y: number, lineSpace: number, fillColorHex: string) {
-        return this.draw(Shape.Rect(x - lineSpace * 1.3 / 2, y, lineSpace * 1.3, lineSpace / 2, lineSpace / 20, fillColorHex))
+        return this.draw(Shape.Rest_2(x, y, lineSpace, fillColorHex))
     }
 
     drawRest_4(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_4(x, y, lineSpace / 20, fillColorHex))
+        return this.draw(Shape.Rest_4(x, y, lineSpace, fillColorHex))
     }
 
     drawRest_8(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_8(x, y, lineSpace / 20, fillColorHex))
+        return this.draw(Shape.Rest_8(x, y, lineSpace, fillColorHex))
     }
 
     drawRest_16(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_16(x, y, lineSpace / 20, fillColorHex))
+        return this.draw(Shape.Rest_16(x, y, lineSpace, fillColorHex))
     }
 
     drawRest_32(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_32(x, y, lineSpace / 20, fillColorHex))
+        return this.draw(Shape.Rest_32(x, y, lineSpace, fillColorHex))
     }
 
     drawRest_64(x: number, y: number, lineSpace: number, fillColorHex: string): RectBound {
-        return this.draw(Shape.Rest_64(x, y, lineSpace / 20, fillColorHex))
+        return this.draw(Shape.Rest_64(x, y, lineSpace, fillColorHex))
     }
 }
