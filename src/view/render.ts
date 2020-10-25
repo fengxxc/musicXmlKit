@@ -23,12 +23,33 @@ export class Render {
         const gu = new Guide(cfg);
         const shape: Shape = new Shape(canvasDom);
         const iterator = MxIterator.getIterator(musicXmlNode);
+        let tokensOfRow: MxToken[] = [];
+        let lastMeasureNo: number = 0;
+        let measureCount: number = 0;
         let entry = null;
+        while (!(entry = iterator.next()).done) {
+            const token: MxToken = entry.value;
+            if (token.MeasureNo != lastMeasureNo) {
+                if (measureCount == cfg.MeasureCountOfRow) {
+                    Render.renderRow(tokensOfRow, cfg, gu, shape);
+                    tokensOfRow = [];
+                    measureCount = 0;
+                }
+                lastMeasureNo = token.MeasureNo;
+                measureCount ++;
+            }
+            tokensOfRow.push(token);
+            
+        }
+        Render.renderRow(tokensOfRow, cfg, gu, shape);
+    }
+
+    static renderRow(tokensOfRow: MxToken[], cfg: Config, gu: Guide, shape: Shape) {
         let noteRenderInfoTemp: NoteRenderInfo[] = [];
         let measureAltersTemp: Record<string, number> = null;
+        let singleDurationWidth: number = cfg.SingleDurationWidth;
         let token: MxToken = null;
-        while (!(entry = iterator.next()).done) {
-            token = entry.value;
+        for (token of tokensOfRow) {
             if (token.SpiritType == 'note') {
                 // 做渲染音符之前应该做的事...
                 [noteRenderInfoTemp, measureAltersTemp] = Render.beforeRenderNote(gu, token, cfg, shape, noteRenderInfoTemp, measureAltersTemp);
@@ -46,7 +67,7 @@ export class Render {
                     _y += (cfg.LineSpace * 5) - (line * cfg.LineSpace);
                     // 如果是和弦音，保证横坐标方向上跟上个音符一样
                     if (note.Chord()) // 和弦音在x轴不前进，固退回
-                        gu.stepAhead(- Render.getNoteStepXDistance(note.Duration(), token.Divisions, cfg.SingleDurationWidth, noteRenderInfoTemp[noteRenderInfoTemp.length-1].HeadWidth));
+                        gu.stepAhead(- Render.getNoteStepXDistance(note.Duration(), token.Divisions, singleDurationWidth, noteRenderInfoTemp[noteRenderInfoTemp.length-1].HeadWidth));
                     // 符头宽度
                     if (
                         noteRenderInfoTemp.length > 0
@@ -60,13 +81,13 @@ export class Render {
                         const nextVirtualStart = NoteRenderInfo.instanceVirtualDisplayed(gu.X, prev.Y + gu.getYStepDistance(), gu.CurViewRow, prev.IsDot, prev.Duration, prev.Divisions, prev.Stem);
                         noteRenderInfoTemp.push(currVirtualEnd);
                         noteRenderInfoTemp.push(nextVirtualStart);
-                        const xOffset = Render.getNoteStepXDistance(prev.Duration, prev.Divisions, cfg.SingleDurationWidth, prev.HeadWidth) - (cfg.PaddingLeft + cfg.ContentWidth - prev.X);
+                        const xOffset = Render.getNoteStepXDistance(prev.Duration, prev.Divisions, singleDurationWidth, prev.HeadWidth) - (cfg.PaddingLeft + cfg.ContentWidth - prev.X);
                         gu.stepAhead(xOffset);
                     }
                     noteWidth = RenderHelper.computeNoteHeadWidth(cfg.LineSpace, 0, cfg.NoteHeadAngle);
                 }
                 noteRenderInfoTemp.push(NoteRenderInfo.instance(gu.X, _y, gu.CurViewRow, noteWidth, token, note));
-                gu.stepAhead(Render.getNoteStepXDistance(note.Duration(), token.Divisions, cfg.SingleDurationWidth, noteWidth));
+                gu.stepAhead(Render.getNoteStepXDistance(note.Duration(), token.Divisions, singleDurationWidth, noteWidth));
             } else if (token.SpiritType == 'backup') {
                 const backup: Backup = <Backup>token.Spirit;
                 const backDistance = (() => {
@@ -90,7 +111,7 @@ export class Render {
             // TODO
         }
         measureAltersTemp = Render.completeRenderMeasureNotes(noteRenderInfoTemp, measureAltersTemp, shape, token.TimeBeats, token.TimeBeatType, cfg.LineSpace / 2 * 7, cfg.LineWidth , cfg.LineWidth * 3 
-                                            , cfg.LineSpace , cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, gu.getYStepDistance(), cfg.LineColor);
+                                            , cfg.LineSpace , cfg.NoteBeamSlopeFactor, cfg.BeamInfoFrom, gu.getYStepDistance(), cfg.LineColor);;
     }
 
     /**

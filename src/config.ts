@@ -20,6 +20,7 @@ export class Config {
     private noteHeadAngle: number; // 符头旋转角度
     private noteBeamSlopeFactor: number; // 符杠倾斜系数 0~1
     private beamInfoFrom: string; // 符杠连接信息来自于 musicxml | auto
+    private measureCountOfRow: number; // 每行有几小节，若此属性有值，则singleDurationWidth无效
 
     constructor(canvas: HTMLElement, musicXmlNode: RootNode) {
         
@@ -42,6 +43,7 @@ export class Config {
         this.noteHeadAngle = 22;
         this.noteBeamSlopeFactor = 0.5; // 符杠倾斜系数 0~，默认0.5
         this.beamInfoFrom = 'musicxml';
+        this.measureCountOfRow = 3; // 默认每行有3小节
     }
 
     
@@ -148,4 +150,9 @@ export class Config {
     public get BeamInfoFrom() : string {
         return this.beamInfoFrom;
     }
+
+    public get MeasureCountOfRow() : number {
+        return this.measureCountOfRow;
+    }
+
 }
